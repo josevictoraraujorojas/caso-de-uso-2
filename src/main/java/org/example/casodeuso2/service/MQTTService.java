@@ -2,16 +2,21 @@ package org.example.casodeuso2.service;
 
 import org.eclipse.paho.client.mqttv3.*;
 import org.example.casodeuso2.config.MQTTProperties;
+import org.example.casodeuso2.model.AmbienteData;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class MQTTService {
     private final MqttClient cliente;
     private final MQTTProperties properties;
 
-    public MQTTService(MqttClient cliente, MQTTProperties properties) {
+    private final AmbienteService ambienteService;
+
+    public MQTTService(MqttClient cliente, MQTTProperties properties, AmbienteService ambienteService) {
         this.cliente = cliente;
         this.properties = properties;
+        this.ambienteService = ambienteService;
 
         iniciarInscricao();
     }
@@ -26,12 +31,18 @@ public class MQTTService {
                 }
 
                 @Override
-                public void messageArrived(String topico, MqttMessage mensagem) throws Exception {
-                    System.out.println("-----------Chegada de mensagem-----------");
-                    System.out.println("Topico: " + topico);
-                    System.out.println("Qualidade de Serviço: " + mensagem.getQos());
-                    System.out.println("Mensagem: " + mensagem.toString());
-                    System.out.println("-----------------------------------------");
+                public void messageArrived(String topico, MqttMessage mensagem) {
+                    try {
+                        String payload = mensagem.toString();
+
+                        ObjectMapper mapper = new ObjectMapper();
+                        AmbienteData data = mapper.readValue(payload, AmbienteData.class);
+
+                        ambienteService.salvarSensorData(data);
+
+                    } catch (Exception e) {
+                        System.out.println("Erro ao processar JSON: " + e.getMessage());
+                    }
                 }
 
                 @Override
