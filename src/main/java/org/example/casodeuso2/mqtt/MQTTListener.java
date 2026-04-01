@@ -1,19 +1,22 @@
-package org.example.casodeuso2.service;
+package org.example.casodeuso2.mqtt;
 
 import org.eclipse.paho.client.mqttv3.*;
 import org.example.casodeuso2.config.MQTTProperties;
 import org.example.casodeuso2.model.AmbienteData;
+import org.example.casodeuso2.service.AmbienteService;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
+
 @Service
-public class MQTTService {
+public class MQTTListener {
+
     private final MqttClient cliente;
     private final MQTTProperties properties;
-
     private final AmbienteService ambienteService;
+    private final ObjectMapper mapper = new ObjectMapper();
 
-    public MQTTService(MqttClient cliente, MQTTProperties properties, AmbienteService ambienteService) {
+    public MQTTListener(MqttClient cliente, MQTTProperties properties, AmbienteService ambienteService) {
         this.cliente = cliente;
         this.properties = properties;
         this.ambienteService = ambienteService;
@@ -35,10 +38,8 @@ public class MQTTService {
                     try {
                         String payload = mensagem.toString();
 
-                        ObjectMapper mapper = new ObjectMapper();
                         AmbienteData data = mapper.readValue(payload, AmbienteData.class);
-
-                        ambienteService.salvarSensorData(data);
+                        ambienteService.processarMensagem(data);
 
                     } catch (Exception e) {
                         System.out.println("Erro ao processar JSON: " + e.getMessage());
@@ -46,26 +47,13 @@ public class MQTTService {
                 }
 
                 @Override
-                public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
-                    System.out.println("Entrega completa: " + iMqttDeliveryToken.isComplete());
-                }
+                public void deliveryComplete(IMqttDeliveryToken token) {}
             });
 
-            cliente.subscribe(properties.getTopic(),properties.getQos());
+            cliente.subscribe(properties.getTopic(), properties.getQos());
+
         } catch (MqttException e) {
             System.out.println("Erro ao iniciar Inscricao");
         }
     }
-
-    public void enviar(String mensagem){
-        MqttMessage message = new MqttMessage(mensagem.getBytes());
-        message.setQos(properties.getQos());
-
-        try {
-            cliente.publish(properties.getTopic(),message);
-        } catch (MqttException e) {
-            System.out.println("Erro ao enviar a menssagem: " + e.getMessage());
-        }
-    }
 }
-
