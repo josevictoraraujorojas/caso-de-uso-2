@@ -3,12 +3,14 @@ package org.example.casodeuso2.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.List;
+
 @Configuration
 @ConfigurationProperties(prefix = "mqtt")
 public class MQTTProperties {
     private String broker;
     private String clientId;
-    private String topic;
+    private List<String> topics;
     private int qos;
 
     public MQTTProperties() {
@@ -30,12 +32,12 @@ public class MQTTProperties {
         this.clientId = clientId;
     }
 
-    public String getTopic() {
-        return topic;
+    public List<String> getTopics() {
+        return topics;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
+    public void setTopics(List<String> topics) {
+        this.topics = topics;
     }
 
     public int getQos() {

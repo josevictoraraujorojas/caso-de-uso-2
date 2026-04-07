@@ -1,15 +1,19 @@
 package org.example.casodeuso2.mqtt;
 
-import org.eclipse.paho.client.mqttv3.*;
+import jakarta.annotation.PostConstruct;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.example.casodeuso2.config.MQTTProperties;
-import org.example.casodeuso2.dto.SensorDTO;
+import org.example.casodeuso2.dto.AmbienteDataDTO;
+import org.example.casodeuso2.dto.ESP32DTO;
 import org.example.casodeuso2.model.AmbienteData;
 import org.example.casodeuso2.model.ESP32;
 import org.example.casodeuso2.service.AmbienteService;
 import org.example.casodeuso2.service.ESP32Service;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
 
 import java.time.Instant;
 import java.util.Date;
@@ -23,7 +27,12 @@ public class MQTTListener {
     private final ESP32Service esp32Service;
     private final ObjectMapper mapper;
 
-    public MQTTListener(MqttClient cliente, MQTTProperties properties, AmbienteService ambienteService, ESP32Service esp32Service, ObjectMapper mapper) {
+    public MQTTListener(MqttClient cliente,
+                        MQTTProperties properties,
+                        AmbienteService ambienteService,
+                        ESP32Service esp32Service,
+                        ObjectMapper mapper) {
+
         this.cliente = cliente;
         this.properties = properties;
         this.ambienteService = ambienteService;
@@ -33,10 +42,10 @@ public class MQTTListener {
 
     @PostConstruct
     public void init() {
-        iniciarInscricao();
+        iniciar();
     }
 
-    private void iniciarInscricao() {
+    private void iniciar() {
         try {
 
             if (!cliente.isConnected()) {
@@ -46,50 +55,67 @@ public class MQTTListener {
             cliente.setCallback(new MqttCallback() {
 
                 @Override
-                public void connectionLost(Throwable throwable) {
-                    System.out.println("Conexão perdida: " + throwable.getMessage());
+                public void connectionLost(Throwable cause) {
+                    System.out.println("Conexão perdida: " + cause.getMessage());
                 }
 
                 @Override
                 public void messageArrived(String topico, MqttMessage mensagem) {
+
+                    String payload = new String(mensagem.getPayload());
+
+                    System.out.println("TOPICO: " + topico);
+                    System.out.println("PAYLOAD: " + payload);
+
                     try {
-                        String payload = new String(mensagem.getPayload());
 
-                        SensorDTO dto = mapper.readValue(payload, SensorDTO.class);
-
-// salva no Influx
-                        AmbienteData ambiente = new AmbienteData();
-                        ambiente.setEsp32Id(dto.getEsp32Id());
-                        ambiente.setTemperatura(dto.getTemperatura());
-                        ambiente.setHumidade(dto.getHumidade());
-                        ambiente.setQualidadeAr(dto.getQualidadeAr());
-                        ambiente.setTimestamp(Instant.now());
-
-                        ambienteService.salvarSensorData(ambiente);
-
-// salva no Neo4j
-                        ESP32 esp = new ESP32();
-                        esp.setMacAddress(dto.getEsp32Id());
-                        esp.setIp(dto.getIp());
-                        esp.setNome(dto.getNome());
-                        esp.setDataInstalacao(new Date());
-
-                        esp32Service.salvarOuAtualizar(esp);
+                        if (topico.equals("ambientedata")) {
+                            processarAmbiente(payload);
+                        } else if (topico.equals("esp32")) {
+                            processarEsp32(payload);
+                        }
 
                     } catch (Exception e) {
-                        System.out.println("Erro ao processar JSON: " + e.getMessage());
+                        System.out.println("Erro: " + e.getMessage());
                     }
                 }
 
                 @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {}
+                public void deliveryComplete(IMqttDeliveryToken token) {
+                }
             });
 
-            cliente.subscribe(properties.getTopic(), properties.getQos());
+            cliente.subscribe(properties.getTopics().toArray(new String[0]));
 
-        } catch (MqttException e) {
-            System.out.println("Erro ao iniciar inscrição: " + e.getMessage());
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void processarAmbiente(String payload) throws Exception {
+
+        AmbienteDataDTO dto = mapper.readValue(payload, AmbienteDataDTO.class);
+
+        AmbienteData ambiente = new AmbienteData();
+        ambiente.setEsp32Id(dto.getEsp32Id());
+        ambiente.setTemperatura(dto.getTemperatura());
+        ambiente.setHumidade(dto.getHumidade());
+        ambiente.setQualidadeAr(dto.getQualidadeAr());
+        ambiente.setTimestamp(Instant.now());
+
+        ambienteService.salvarSensorData(ambiente);
+    }
+
+    private void processarEsp32(String payload) throws Exception {
+
+        ESP32DTO dto = mapper.readValue(payload, ESP32DTO.class);
+
+        ESP32 esp = new ESP32();
+        esp.setIp(dto.getIp());
+        esp.setNome(dto.getNome());
+        esp.setMacAddress(dto.getMacAddress());
+        esp.setDataInstalacao(new Date());
+
+        esp32Service.salvarOuAtualizar(esp);
     }
 }

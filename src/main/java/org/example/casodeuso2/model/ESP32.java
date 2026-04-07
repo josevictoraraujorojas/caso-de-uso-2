@@ -4,8 +4,12 @@ import jakarta.annotation.Nullable;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Node
 public class ESP32 {
@@ -16,6 +20,8 @@ public class ESP32 {
     private String ip;
     private String nome;
     private String macAddress;
+    @Relationship(type = "COLETA_DADOS_DE", direction = Relationship.Direction.OUTGOING)
+    private Set<Sensor> sensores;
 
     public ESP32() {
     }
@@ -59,6 +65,14 @@ public class ESP32 {
 
     public void setMacAddress(String macAddress) {
         this.macAddress = macAddress;
+    }
+
+    public Set<Sensor> getSensores() {
+        return sensores;
+    }
+
+    public void setSensores(Set<Sensor> sensores) {
+        this.sensores = sensores;
     }
 }
 
