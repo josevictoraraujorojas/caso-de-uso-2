@@ -23,6 +23,12 @@ public class FazendaController {
         return service.salvar(fazenda);
     }
 
+    //PUT
+    @PutMapping("/{fazendaId}/curral/{curralId}")
+    public Fazenda adicionarCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
+        return service.adicionarCurral(fazendaId, curralId);
+    }
+
     // GET todos
     @GetMapping
     public List<Fazenda> listar() {

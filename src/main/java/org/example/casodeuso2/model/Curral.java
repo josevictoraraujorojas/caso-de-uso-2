@@ -17,6 +17,7 @@ public class Curral {
     private String nome;
     @Relationship(type = "COMPOSTO_POR",direction = Relationship.Direction.OUTGOING)
     private Set<Porco> porcos;
+    @Relationship(type = "POSSUI_ESP",direction = Relationship.Direction.OUTGOING)
     private Set<ESP32> esp32;
 
     public Curral() {
@@ -61,5 +62,18 @@ public class Curral {
 
     public void setEsp32(Set<ESP32> esp32) {
         this.esp32 = esp32;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Curral)) return false;
+        Curral curral = (Curral) o;
+        return id != null && id.equals(curral.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
