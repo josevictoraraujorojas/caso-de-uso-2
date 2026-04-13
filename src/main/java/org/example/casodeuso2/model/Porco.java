@@ -78,4 +78,17 @@ public class Porco {
     public void setLote(int lote) {
         this.lote = lote;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Porco)) return false;
+        Porco porco = (Porco) o;
+        return id != null && id.equals(porco.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

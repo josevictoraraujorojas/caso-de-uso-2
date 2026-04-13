@@ -10,7 +10,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/variavelAmbiente")
 public class VariavelAmbienteController {
-    private VariavelAmbienteService service;
+    private final VariavelAmbienteService service;
 
     @Autowired
     public VariavelAmbienteController(VariavelAmbienteService service) {
@@ -21,6 +21,12 @@ public class VariavelAmbienteController {
     @PostMapping
     public VariavelAmbiente criar(@RequestBody VariavelAmbiente variavelAmbiente) {
         return service.salvar(variavelAmbiente);
+    }
+
+    //PUT
+    @PutMapping("/{variavelAmbienteId}/limiteAmbiental/{limiteId}")
+    public VariavelAmbiente adicionarSensor(@PathVariable Long variavelAmbienteId, @PathVariable Long limiteId) {
+        return service.adicionarLimiteAmbiental(variavelAmbienteId,limiteId);
     }
 
     // GET todos

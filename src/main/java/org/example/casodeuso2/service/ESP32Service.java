@@ -1,19 +1,25 @@
 package org.example.casodeuso2.service;
 
 import org.example.casodeuso2.model.ESP32;
+import org.example.casodeuso2.model.Sensor;
 import org.example.casodeuso2.repository.ESP32Repository;
+import org.example.casodeuso2.repository.SensorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class ESP32Service {
 
     private final ESP32Repository repository;
+    private final SensorRepository sensorRepository;
 
     @Autowired
-    public ESP32Service(ESP32Repository repository) {
+    public ESP32Service(ESP32Repository repository, SensorRepository sensorRepository) {
         this.repository = repository;
+        this.sensorRepository = sensorRepository;
     }
 
     // salvar
@@ -30,9 +36,23 @@ public class ESP32Service {
         return repository.save(esp32);
     }
 
+    public ESP32 adicionarSensor(Long esp32Id,Long sensorId) {
+        ESP32 esp32 = repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("Esp32 não encontrado"));
+        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+
+        if (esp32.getSensores()==null){
+            esp32.setSensores(new HashSet<>());
+        }
+        if (esp32.getSensores().contains(sensor)){
+            throw new RuntimeException("Esse sensor já esta vinculado a este esp32");
+        }
+        esp32.getSensores().add(sensor);
+        return repository.save(esp32);
+    }
+
     // listar todos
     public List<ESP32> listar() {
-        return (List<ESP32>) repository.findAll();
+        return repository.findAll();
     }
 
     // buscar por id

@@ -1,5 +1,6 @@
 package org.example.casodeuso2.controller;
 
+import org.example.casodeuso2.model.Curral;
 import org.example.casodeuso2.model.ESP32;
 import org.example.casodeuso2.service.ESP32Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,12 @@ public class ESP32Controller {
     @PostMapping
     public ESP32 criar(@RequestBody ESP32 esp32) {
         return service.salvarOuAtualizar(esp32);
+    }
+
+    //PUT
+    @PutMapping("/{esp32Id}/sensor/{sensorId}")
+    public ESP32 adicionarSensor(@PathVariable Long esp32Id , @PathVariable Long sensorId) {
+        return service.adicionarSensor(esp32Id,sensorId);
     }
 
     // GET todos

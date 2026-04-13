@@ -5,6 +5,8 @@ import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
+import java.util.Objects;
+
 @Node
 public class LimiteAmbiental {
     @Id
@@ -39,5 +41,18 @@ public class LimiteAmbiental {
 
     public void setValorMax(float valorMax) {
         this.valorMax = valorMax;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        LimiteAmbiental that = (LimiteAmbiental) o;
+        return id!=null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

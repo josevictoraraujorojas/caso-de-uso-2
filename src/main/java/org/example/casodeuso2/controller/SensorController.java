@@ -23,6 +23,12 @@ public class SensorController {
         return service.salvar(sensor);
     }
 
+    //PUT
+    @PutMapping("/{sensorId}/variavelAmbiente/{variavelAmbienteId}")
+    public Sensor adicionarSensor(@PathVariable Long sensorId , @PathVariable Long variavelAmbienteId) {
+        return service.adicionarVariavelAmbiente(sensorId, variavelAmbienteId);
+    }
+
     // GET todos
     @GetMapping
     public List<Sensor> listar() {

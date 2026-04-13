@@ -7,6 +7,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 @Node
@@ -62,5 +63,18 @@ public class Sensor {
 
     public void setVariaveisAmbientes(Set<VariavelAmbiente> variaveisAmbientes) {
         this.variaveisAmbientes = variaveisAmbientes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Sensor sensor = (Sensor) o;
+        return id != null &&  id.equals(sensor.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

@@ -7,6 +7,8 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
+import java.util.Objects;
+
 @Node
 public class VariavelAmbiente {
     @Id
@@ -53,5 +55,26 @@ public class VariavelAmbiente {
 
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public LimiteAmbiental getLimite() {
+        return limite;
+    }
+
+    public void setLimite(LimiteAmbiental limite) {
+        this.limite = limite;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof VariavelAmbiente)) return false;
+        VariavelAmbiente that = (VariavelAmbiente) o;
+        return id != null && id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }
