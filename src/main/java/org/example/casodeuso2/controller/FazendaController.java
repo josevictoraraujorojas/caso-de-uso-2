@@ -46,4 +46,9 @@ public class FazendaController {
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
     }
+
+    @DeleteMapping("/{fazendaId}/curral/{curralId}")
+    public Fazenda removerCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
+        return service.removerCurral(fazendaId, curralId);
+    }
 }

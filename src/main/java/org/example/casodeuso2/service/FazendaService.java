@@ -42,9 +42,27 @@ public class FazendaService {
         return repository.save(fazenda);
     }
 
+    public Fazenda removerCurral(Long fazendaId, Long curralId){
+        Fazenda fazenda = repository.findById(fazendaId).orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
+        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+
+        if (fazenda.getCurrais()==null){
+            throw new RuntimeException("Essa fazenda não possui currais");
+        }
+
+        if (!fazenda.getCurrais().contains(curral)) {
+            throw new RuntimeException("Esse curral não está vinculado a essa fazenda");
+        }
+
+        fazenda.getCurrais().remove(curral);
+        return repository.save(fazenda);
+    }
+
+
+
     // listar todos
     public List<Fazenda> listar() {
-        return (List<Fazenda>) repository.findAll();
+        return repository.findAll();
     }
 
     // buscar por id
