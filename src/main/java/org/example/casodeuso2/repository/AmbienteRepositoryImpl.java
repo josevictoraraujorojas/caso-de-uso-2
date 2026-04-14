@@ -16,6 +16,8 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.expression.common.ExpressionUtils.toLong;
+
 @Repository
 public class AmbienteRepositoryImpl implements AmbienteRepository {
 
@@ -34,60 +36,47 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
     @Override
     public void salvarSensorData(AmbienteData data) {
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
-        data.setTimestamp(Instant.now());
+        data.setTime(Instant.now());
         writeApi.writeMeasurement(WritePrecision.MS, data);
     }
 
     @Override
     public List<AmbienteData> consultarSensoresData() {
 
-        String flux = String.format(
-                "from(bucket:\"%s\") " +
+        String flux =
+                "from(bucket: \"" + bucket + "\") " +
                         "|> range(start: 0) " +
-                        "|> filter(fn: (r) => r[\"_measurement\"] == \"medicoes_ambientais\") " +
-                        "|> sort(columns: [\"_time\"], desc: false) " +
-                        "|> yield(name: \"sorted\")",
-                bucket
-        );
+                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
+                        "|> sort(columns: [\"_time\"], desc: false)";
 
         QueryApi queryApi = influxDBClient.getQueryApi();
         List<FluxTable> tables = queryApi.query(flux, org);
 
-        List<AmbienteData> dados = new ArrayList<>();
+        List<AmbienteData> resultado = new ArrayList<>();
 
         for (FluxTable table : tables) {
             for (FluxRecord record : table.getRecords()) {
 
-                String esp32Id = (String) record.getValueByKey("esp32_id");
-                String field = (String) record.getValueByKey("_field");
+                AmbienteData data = new AmbienteData();
+
+                data.setTime(record.getTime());
+
                 Object value = record.getValueByKey("_value");
-
-                Instant timestamp = record.getTime();
-
-                AmbienteData existente = dados.stream()
-                        .filter(d -> d.getEsp32Id().equals(esp32Id) && d.getTimestamp().equals(timestamp))
-                        .findFirst()
-                        .orElseGet(() -> {
-                            AmbienteData novo = new AmbienteData();
-                            novo.setEsp32Id(esp32Id);
-                            novo.setTimestamp(timestamp);
-                            dados.add(novo);
-                            return novo;
-                        });
-
-                if (field != null && value instanceof Number) {
-                    double val = ((Number) value).doubleValue();
-                    if (field.equals("temperatura")) {
-                        existente.setTemperatura(val);
-                    } else if (field.equals("humidade")) {
-                        existente.setHumidade(val);
-                    } else if (field.equals("qualidad_ar")) {
-                        existente.setQualidadeAr(val);
-                    }
+                if (value instanceof Number n) {
+                    data.setValor(n.doubleValue());
                 }
+
+                data.setCurralId(toLong(record.getValueByKey("curral_id")));
+                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
+                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
+                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
+                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
+
+                resultado.add(data);
             }
         }
-        return dados;
+
+        return resultado;
     }
 
     @Override
@@ -112,6 +101,11 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
             System.err.println("Erro ao deletar dados do sensor: " + e.getMessage());
         }
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) return null;
+        return Long.parseLong(value.toString());
     }
 
 }

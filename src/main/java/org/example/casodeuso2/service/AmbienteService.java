@@ -1,6 +1,5 @@
 package org.example.casodeuso2.service;
 
-import org.example.casodeuso2.dto.AmbienteDataDTO;
 import org.example.casodeuso2.model.AmbienteData;
 import org.example.casodeuso2.repository.AmbienteRepository;
 import org.example.casodeuso2.util.DataMapper;
@@ -25,8 +24,8 @@ public class AmbienteService {
     }
 
 
-    public List<AmbienteDataDTO> consultarSensoresData() {
-        return DataMapper.parseListObjects(ambienteRepository.consultarSensoresData(), AmbienteDataDTO.class);
+    public List<AmbienteData> consultarSensoresData() {
+        return ambienteRepository.consultarSensoresData();
     }
 
     public void deletarSensorData(String sensorId) {
@@ -39,7 +38,7 @@ public class AmbienteService {
             System.out.println("Dado inválido: esp32Id null");
             return;
         }
-        data.setTimestamp(Instant.now());
+        data.setTime(Instant.now());
         salvarSensorData(data);
     }
 }

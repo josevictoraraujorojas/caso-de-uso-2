@@ -61,6 +61,16 @@ public class ESP32Service {
                 .orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
     }
 
+    public ESP32 buscarPorMac(String mac) {
+        ESP32 esp32 = repository.findByMacAddress(mac);
+
+        if (esp32 == null) {
+            throw new RuntimeException("Esp32 nao encontrado");
+        }
+
+        return esp32;
+    }
+
     // buscar por nome
     public List<ESP32> buscarPorNome(String nome) {
         return repository.findByNome(nome);

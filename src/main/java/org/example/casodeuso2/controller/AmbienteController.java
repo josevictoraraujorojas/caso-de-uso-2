@@ -26,7 +26,7 @@ public class AmbienteController {
     }
 
     @GetMapping
-    public List<AmbienteDataDTO> consultarSensores() {
+    public List<AmbienteData> consultarSensores() {
         return ambienteService.consultarSensoresData();
     }
 

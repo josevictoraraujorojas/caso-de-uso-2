@@ -5,6 +5,7 @@ import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+
 @Repository
 public interface ESP32Repository extends Neo4jRepository<ESP32, Long> {
 
@@ -12,4 +13,3 @@ public interface ESP32Repository extends Neo4jRepository<ESP32, Long> {
 
     ESP32 findByMacAddress(String macAddress);
 }
-

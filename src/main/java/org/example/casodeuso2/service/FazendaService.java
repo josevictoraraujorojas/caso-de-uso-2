@@ -27,10 +27,13 @@ public class FazendaService {
     }
 
     public Fazenda adicionarCurral(Long fazendaId, Long curralId){
-        Fazenda fazenda = repository.findById(fazendaId).orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
-        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+        Fazenda fazenda = repository.findById(fazendaId)
+                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
 
-        if (fazenda.getCurrais()==null){
+        Curral curral = curralRepository.findById(curralId)
+                .orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+
+        if (fazenda.getCurrais() == null){
             fazenda.setCurrais(new HashSet<>());
         }
 
@@ -39,14 +42,19 @@ public class FazendaService {
         }
 
         fazenda.getCurrais().add(curral);
+
+
         return repository.save(fazenda);
     }
 
     public Fazenda removerCurral(Long fazendaId, Long curralId){
-        Fazenda fazenda = repository.findById(fazendaId).orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
-        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+        Fazenda fazenda = repository.findById(fazendaId)
+                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
 
-        if (fazenda.getCurrais()==null){
+        Curral curral = curralRepository.findById(curralId)
+                .orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+
+        if (fazenda.getCurrais() == null){
             throw new RuntimeException("Essa fazenda não possui currais");
         }
 
@@ -55,6 +63,8 @@ public class FazendaService {
         }
 
         fazenda.getCurrais().remove(curral);
+
+
         return repository.save(fazenda);
     }
 

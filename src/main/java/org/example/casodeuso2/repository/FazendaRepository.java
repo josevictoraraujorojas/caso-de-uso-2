@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface FazendaRepository extends Neo4jRepository<Fazenda,Long> {
 
+
 }

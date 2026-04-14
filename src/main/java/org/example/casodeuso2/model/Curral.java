@@ -19,6 +19,8 @@ public class Curral {
     private Set<Porco> porcos;
     @Relationship(type = "POSSUI_ESP",direction = Relationship.Direction.OUTGOING)
     private Set<ESP32> esp32;
+    @Relationship(type = "POSSUI_CURRAL",direction = Relationship.Direction.INCOMING)
+    private Fazenda fazenda;
 
     public Curral() {
     }
@@ -62,6 +64,14 @@ public class Curral {
 
     public void setEsp32(Set<ESP32> esp32) {
         this.esp32 = esp32;
+    }
+
+    public Fazenda getFazenda() {
+        return fazenda;
+    }
+
+    public void setFazenda(Fazenda fazenda) {
+        this.fazenda = fazenda;
     }
 
     @Override

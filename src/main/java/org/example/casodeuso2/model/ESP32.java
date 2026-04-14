@@ -19,6 +19,8 @@ public class ESP32 {
     private String macAddress;
     @Relationship(type = "COLETA_DADOS_DE", direction = Relationship.Direction.OUTGOING)
     private Set<Sensor> sensores;
+    @Relationship(type = "POSSUI_ESP", direction = Relationship.Direction.INCOMING)
+    private Curral curral;
 
     public ESP32() {
     }
@@ -83,6 +85,14 @@ public class ESP32 {
 
     public void setSensores(Set<Sensor> sensores) {
         this.sensores = sensores;
+    }
+
+    public Curral getCurral() {
+        return curral;
+    }
+
+    public void setCurral(Curral curral) {
+        this.curral = curral;
     }
 }
 

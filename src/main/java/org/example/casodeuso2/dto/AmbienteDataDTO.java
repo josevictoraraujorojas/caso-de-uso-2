@@ -1,43 +1,44 @@
 package org.example.casodeuso2.dto;
 
 public class AmbienteDataDTO {
-    private String esp32Id;
-    private double temperatura;
-    private double humidade;
-    private double qualidadeAr;
+
+    private Double valor;
+    private String campo;
+    private String esp32Mac;
+    private String sensor;
 
     public AmbienteDataDTO() {
     }
 
-    public String getEsp32Id() {
-        return esp32Id;
+    public Double getValor() {
+        return valor;
     }
 
-    public void setEsp32Id(String esp32Id) {
-        this.esp32Id = esp32Id;
+    public void setValor(Double valor) {
+        this.valor = valor;
     }
 
-    public double getTemperatura() {
-        return temperatura;
+    public String getCampo() {
+        return campo;
     }
 
-    public void setTemperatura(double temperatura) {
-        this.temperatura = temperatura;
+    public void setCampo(String campo) {
+        this.campo = campo;
     }
 
-    public double getHumidade() {
-        return humidade;
+    public String getEsp32Mac() {
+        return esp32Mac;
     }
 
-    public void setHumidade(double humidade) {
-        this.humidade = humidade;
+    public void setEsp32Mac(String esp32Mac) {
+        this.esp32Mac = esp32Mac;
     }
 
-    public double getQualidadeAr() {
-        return qualidadeAr;
+    public String getSensor() {
+        return sensor;
     }
 
-    public void setQualidadeAr(double qualidadeAr) {
-        this.qualidadeAr = qualidadeAr;
+    public void setSensor(String sensor) {
+        this.sensor = sensor;
     }
 }
