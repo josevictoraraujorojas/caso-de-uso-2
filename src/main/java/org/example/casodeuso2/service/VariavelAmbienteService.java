@@ -31,11 +31,11 @@ public class VariavelAmbienteService {
         VariavelAmbiente variavelAmbiente = repository.findById(variavelAmbientalId).orElseThrow(() -> new RuntimeException("Variavel de Ambiente não encontrada"));
         LimiteAmbiental limiteAmbiental = limiteAmbientalRepository.findById(limiteAmbientalId).orElseThrow(() -> new RuntimeException("Limite Ambiental nâo encontrado"));
 
+
         if (variavelAmbiente.getLimite()==null){
             variavelAmbiente.setLimite(limiteAmbiental);
             return repository.save(variavelAmbiente);
         }
-
         if (Objects.equals(variavelAmbiente.getLimite().getId(), limiteAmbiental.getId())) {
             throw new RuntimeException("Esse Limite já esta vinculada com esta Variavel de Ambiente");
         }

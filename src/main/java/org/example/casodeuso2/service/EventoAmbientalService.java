@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class EventoAmbientalService {
@@ -37,7 +38,8 @@ public class EventoAmbientalService {
             eventoAmbiental.setCurral(curral);
             return repository.save(eventoAmbiental);
         }
-        if (eventoAmbiental.getCurral().equals(curral)){
+
+        if (Objects.equals(eventoAmbiental.getCurral().getId(), curral.getId())) {
             throw new RuntimeException("Esse curral já esta vinculado a este Evento Ambiental");
         }
         eventoAmbiental.setCurral(curral);
@@ -52,7 +54,7 @@ public class EventoAmbientalService {
             eventoAmbiental.setVariaveisAmbiente(variavelAmbiente);
             return repository.save(eventoAmbiental);
         }
-        if (eventoAmbiental.getVariaveisAmbiente().equals(variavelAmbienteId)){
+        if (Objects.equals(eventoAmbiental.getVariaveisAmbiente().getId(), variavelAmbiente.getId())) {
             throw new RuntimeException("Essa Varivel de Ambiente já esta vinculado a este Evento Ambiental");
         }
         eventoAmbiental.setVariaveisAmbiente(variavelAmbiente);
