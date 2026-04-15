@@ -7,9 +7,6 @@ import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Relationship;
 
-import java.util.Objects;
-import java.util.Set;
-
 @Node
 public class VariavelAmbiente {
     @Id
@@ -22,8 +19,6 @@ public class VariavelAmbiente {
     private LimiteAmbiental limite;
     @Relationship(type = "MEDE",direction = Relationship.Direction.INCOMING)
     private Sensor sensor;
-    @Relationship(type = "DERIVA_DE",direction = Relationship.Direction.INCOMING)
-    private EventoAmbiental eventoAmbiental;
 
 
     public VariavelAmbiente() {
@@ -76,14 +71,6 @@ public class VariavelAmbiente {
 
     public void setSensor(Sensor sensor) {
         this.sensor = sensor;
-    }
-
-    public EventoAmbiental getEventoAmbiental() {
-        return eventoAmbiental;
-    }
-
-    public void setEventoAmbiental(EventoAmbiental eventoAmbiental) {
-        this.eventoAmbiental = eventoAmbiental;
     }
 
     @Override

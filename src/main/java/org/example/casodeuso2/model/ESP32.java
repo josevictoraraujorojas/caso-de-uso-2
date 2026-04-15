@@ -21,6 +21,8 @@ public class ESP32 {
     private Set<Sensor> sensores;
     @Relationship(type = "POSSUI_ESP", direction = Relationship.Direction.INCOMING)
     private Curral curral;
+    @Relationship(type = "DERIVA_DE",direction = Relationship.Direction.OUTGOING)
+    private EventoAmbiental eventoAmbiental;
 
     public ESP32() {
     }
@@ -93,6 +95,14 @@ public class ESP32 {
 
     public void setCurral(Curral curral) {
         this.curral = curral;
+    }
+
+    public EventoAmbiental getEventoAmbiental() {
+        return eventoAmbiental;
+    }
+
+    public void setEventoAmbiental(EventoAmbiental eventoAmbiental) {
+        this.eventoAmbiental = eventoAmbiental;
     }
 }
 

@@ -25,9 +25,9 @@ public class EventoAmbientalController {
     }
 
     //PUT
-    @PutMapping("/{eventoAmbienteId}/variavelAmbiente/{variavelAmbienteId}")
-    public EventoAmbientalResponseDTO adicionarVariavelAmbiente(@PathVariable Long eventoAmbienteId ,@PathVariable Long variavelAmbienteId) {
-        return service.adicionarVaravelAmbiente(eventoAmbienteId,variavelAmbienteId);
+    @PutMapping("/{eventoAmbienteId}/esp32/{esp32Id}")
+    public EventoAmbientalResponseDTO adicionarEsp32(@PathVariable Long eventoAmbienteId ,@PathVariable Long esp32Id) {
+        return service.adicionarEsp32(eventoAmbienteId,esp32Id);
     }
 
     @PutMapping("/{eventoAmbienteId}/curral/{curralId}")

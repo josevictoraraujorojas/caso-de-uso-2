@@ -18,7 +18,7 @@ public class EventoAmbiental {
     private Date timestamp;
     private float valorMedio;
     @Relationship(type = "DERIVA_DE",direction = Relationship.Direction.OUTGOING)
-    private VariavelAmbiente variaveisAmbiente;
+    private ESP32 esp32;
     @Relationship(type = "OCORRE_EM",direction = Relationship.Direction.OUTGOING)
     private Curral curral;
 
@@ -67,12 +67,12 @@ public class EventoAmbiental {
         this.valorMedio = valorMedio;
     }
 
-    public VariavelAmbiente getVariaveisAmbiente() {
-        return variaveisAmbiente;
+    public ESP32 getEsp32() {
+        return esp32;
     }
 
-    public void setVariaveisAmbiente(VariavelAmbiente variaveisAmbiente) {
-        this.variaveisAmbiente = variaveisAmbiente;
+    public void setEsp32(ESP32 esp32) {
+        this.esp32 = esp32;
     }
 
     public Curral getCurral() {

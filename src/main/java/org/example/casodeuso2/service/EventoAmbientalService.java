@@ -3,11 +3,11 @@ package org.example.casodeuso2.service;
 import org.example.casodeuso2.dto.EventoAmbientalCreateDTO;
 import org.example.casodeuso2.dto.EventoAmbientalResponseDTO;
 import org.example.casodeuso2.model.Curral;
+import org.example.casodeuso2.model.ESP32;
 import org.example.casodeuso2.model.EventoAmbiental;
-import org.example.casodeuso2.model.VariavelAmbiente;
 import org.example.casodeuso2.repository.CurralRepository;
+import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.EventoAmbientalRepository;
-import org.example.casodeuso2.repository.VariavelAmbienteRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,13 +19,13 @@ import java.util.Objects;
 public class EventoAmbientalService {
     private final EventoAmbientalRepository repository;
     private final CurralRepository curralRepository;
-    private final VariavelAmbienteRepository variavelAmbienteRepository;
+    private final ESP32Repository esp32Repository;
 
     @Autowired
-    public EventoAmbientalService(EventoAmbientalRepository repository, CurralRepository curralRepository, VariavelAmbienteRepository variavelAmbienteRepository) {
+    public EventoAmbientalService(EventoAmbientalRepository repository, CurralRepository curralRepository, ESP32Repository esp32Repository) {
         this.repository = repository;
         this.curralRepository = curralRepository;
-        this.variavelAmbienteRepository = variavelAmbienteRepository;
+        this.esp32Repository = esp32Repository;
     }
 
     // salvar
@@ -34,18 +34,18 @@ public class EventoAmbientalService {
     }
 
 
-    public EventoAmbientalResponseDTO adicionarVaravelAmbiente(Long eventoAmbientalId, Long variavelAmbienteId){
+    public EventoAmbientalResponseDTO adicionarEsp32(Long eventoAmbientalId, Long esp32Id){
         EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
-        VariavelAmbiente variavelAmbiente = variavelAmbienteRepository.findById(variavelAmbienteId).orElseThrow(() -> new RuntimeException("Variavel de Ambiente não encontrado"));
+        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
 
-        if (eventoAmbiental.getVariaveisAmbiente()==null){
-            eventoAmbiental.setVariaveisAmbiente(variavelAmbiente);
+        if (eventoAmbiental.getEsp32()==null){
+            eventoAmbiental.setEsp32(esp32);
             return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
         }
-        if (Objects.equals(eventoAmbiental.getVariaveisAmbiente().getId(), variavelAmbiente.getId())) {
-            throw new RuntimeException("Essa Varivel de Ambiente já esta vinculado a este Evento Ambiental");
+        if (Objects.equals(eventoAmbiental.getEsp32().getId(), esp32.getId())) {
+            throw new RuntimeException("Esse esp32 já esta vinculado a este Evento Ambiental");
         }
-        eventoAmbiental.setVariaveisAmbiente(variavelAmbiente);
+        eventoAmbiental.setEsp32(esp32);
         return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
     }
 

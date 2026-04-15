@@ -10,7 +10,7 @@ public class EventoAmbientalResponseDTO {
     private Date timestamp;
     private float valorMedio;
     private VariavelAmbienteResponseDTO variaveisAmbiente;
-    private CurralResponseDTO curral;
+    private ESP32ResponseDTO esp32;
 
     public EventoAmbientalResponseDTO() {
     }
@@ -63,11 +63,11 @@ public class EventoAmbientalResponseDTO {
         this.variaveisAmbiente = variaveisAmbiente;
     }
 
-    public CurralResponseDTO getCurral() {
-        return curral;
+    public ESP32ResponseDTO getEsp32() {
+        return esp32;
     }
 
-    public void setCurral(CurralResponseDTO curral) {
-        this.curral = curral;
+    public void setEsp32(ESP32ResponseDTO esp32) {
+        this.esp32 = esp32;
     }
 }
