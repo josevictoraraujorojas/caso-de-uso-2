@@ -1,9 +1,12 @@
 package org.example.casodeuso2.service;
 
+import org.example.casodeuso2.dto.FazendaCreateDTO;
+import org.example.casodeuso2.dto.FazendaResponseDTO;
 import org.example.casodeuso2.model.Curral;
 import org.example.casodeuso2.model.Fazenda;
 import org.example.casodeuso2.repository.CurralRepository;
 import org.example.casodeuso2.repository.FazendaRepository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +25,11 @@ public class FazendaService {
     }
 
     // salvar
-    public Fazenda salvar(Fazenda fazenda) {
-        return repository.save(fazenda);
+    public FazendaResponseDTO salvar(FazendaCreateDTO fazendaCreateDTO) {
+        return DataMapper.parseObject(repository.save(DataMapper.parseObject(fazendaCreateDTO, Fazenda.class)),FazendaResponseDTO.class);
     }
 
-    public Fazenda adicionarCurral(Long fazendaId, Long curralId){
+    public FazendaResponseDTO adicionarCurral(Long fazendaId, Long curralId){
         Fazenda fazenda = repository.findById(fazendaId)
                 .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
 
@@ -44,10 +47,25 @@ public class FazendaService {
         fazenda.getCurrais().add(curral);
 
 
-        return repository.save(fazenda);
+        return DataMapper.parseObject(repository.save(fazenda), FazendaResponseDTO.class);
     }
 
-    public Fazenda removerCurral(Long fazendaId, Long curralId){
+    // listar todos
+    public List<FazendaResponseDTO> listar() {
+        return DataMapper.parseListObjects(repository.findAll(), FazendaResponseDTO.class);
+    }
+
+    // buscar por id
+    public FazendaResponseDTO buscarPorId(Long id) {
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Fazenda não encontrado")), FazendaResponseDTO.class);
+    }
+
+    // deletar
+    public void deletar(Long id) {
+        repository.deleteById(id);
+    }
+
+    public FazendaResponseDTO removerCurral(Long fazendaId, Long curralId){
         Fazenda fazenda = repository.findById(fazendaId)
                 .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
 
@@ -65,24 +83,6 @@ public class FazendaService {
         fazenda.getCurrais().remove(curral);
 
 
-        return repository.save(fazenda);
-    }
-
-
-
-    // listar todos
-    public List<Fazenda> listar() {
-        return repository.findAll();
-    }
-
-    // buscar por id
-    public Fazenda buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrado"));
-    }
-
-    // deletar
-    public void deletar(Long id) {
-        repository.deleteById(id);
+        return DataMapper.parseObject(repository.save(fazenda), FazendaResponseDTO.class);
     }
 }

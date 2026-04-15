@@ -1,7 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.LimiteAmbiental;
-import org.example.casodeuso2.model.Porco;
+import org.example.casodeuso2.dto.PorcoCreateDTO;
+import org.example.casodeuso2.dto.PorcoResponseDTO;
 import org.example.casodeuso2.service.PorcoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,19 +20,19 @@ public class PorcoController {
 
     // POST
     @PostMapping
-    public Porco criar(@RequestBody Porco porco) {
-        return service.salvar(porco);
+    public PorcoResponseDTO criar(@RequestBody PorcoCreateDTO porcoCreateDTO) {
+        return service.salvar(porcoCreateDTO);
     }
 
     // GET todos
     @GetMapping
-    public List<Porco> listar() {
+    public List<PorcoResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public Porco buscarPorId(@PathVariable Long id) {
+    public PorcoResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 

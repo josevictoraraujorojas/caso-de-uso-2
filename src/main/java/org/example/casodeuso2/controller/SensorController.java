@@ -1,6 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.Sensor;
+import org.example.casodeuso2.dto.SensorCreateDto;
+import org.example.casodeuso2.dto.SensorResponseDTO;
 import org.example.casodeuso2.service.SensorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,25 +20,25 @@ public class SensorController {
 
     // POST
     @PostMapping
-    public Sensor criar(@RequestBody Sensor sensor) {
-        return service.salvar(sensor);
+    public SensorResponseDTO criar(@RequestBody SensorCreateDto sensorCreateDto) {
+        return service.salvar(sensorCreateDto);
     }
 
     //PUT
     @PutMapping("/{sensorId}/variavelAmbiente/{variavelAmbienteId}")
-    public Sensor adicionarSensor(@PathVariable Long sensorId , @PathVariable Long variavelAmbienteId) {
+    public SensorResponseDTO adicionarSensor(@PathVariable Long sensorId , @PathVariable Long variavelAmbienteId) {
         return service.adicionarVariavelAmbiente(sensorId, variavelAmbienteId);
     }
 
     // GET todos
     @GetMapping
-    public List<Sensor> listar() {
+    public List<SensorResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public Sensor buscarPorId(@PathVariable Long id) {
+    public SensorResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 

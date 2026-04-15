@@ -4,6 +4,7 @@ import jakarta.annotation.Nullable;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.Objects;
 
@@ -14,6 +15,8 @@ public class LimiteAmbiental {
     private @Nullable Long id;
     private float valorMin;
     private float valorMax;
+    @Relationship(type = "TEM_LIMITE", direction = Relationship.Direction.INCOMING)
+    private VariavelAmbiente variavelAmbiente;
 
     public LimiteAmbiental() {
     }
@@ -41,6 +44,14 @@ public class LimiteAmbiental {
 
     public void setValorMax(float valorMax) {
         this.valorMax = valorMax;
+    }
+
+    public VariavelAmbiente getVariavelAmbiente() {
+        return variavelAmbiente;
+    }
+
+    public void setVariavelAmbiente(VariavelAmbiente variavelAmbiente) {
+        this.variavelAmbiente = variavelAmbiente;
     }
 
     @Override

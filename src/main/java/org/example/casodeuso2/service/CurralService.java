@@ -1,11 +1,14 @@
 package org.example.casodeuso2.service;
 
+import org.example.casodeuso2.dto.CurralCreateDTO;
+import org.example.casodeuso2.dto.CurralResponseDTO;
 import org.example.casodeuso2.model.Curral;
 import org.example.casodeuso2.model.ESP32;
 import org.example.casodeuso2.model.Porco;
 import org.example.casodeuso2.repository.CurralRepository;
 import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.PorcoRespository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,22 +29,12 @@ public class CurralService {
     }
 
     // salvar
-    public Curral salvar(Curral curral) {
-        return repository.save(curral);
+    public CurralResponseDTO salvar(CurralCreateDTO curralCreateDTO) {
+        Curral curral = DataMapper.parseObject(curralCreateDTO, Curral.class);
+        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
     }
 
-    // listar todos
-    public List<Curral> listar() {
-        return (List<Curral>) repository.findAll();
-    }
-
-    // buscar por id
-    public Curral buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Curral não encontrado"));
-    }
-
-    public Curral adicionarPorco(Long curralId, Long porcoId){
+    public CurralResponseDTO adicionarPorco(Long curralId, Long porcoId){
         Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
         Porco porco = porcoRespository.findById(porcoId).orElseThrow(() -> new RuntimeException("Porco não encontrado"));
 
@@ -55,10 +48,10 @@ public class CurralService {
             throw new RuntimeException("Curral já esta cheio");
         }
         curral.getPorcos().add(porco);
-        return repository.save(curral);
+        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
     }
 
-    public Curral adicionarEsp32(Long curralId, Long esp32Id ){
+    public CurralResponseDTO adicionarEsp32(Long curralId, Long esp32Id ){
         Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
         ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(()-> new RuntimeException("ESP32 não encontrado"));
 
@@ -69,7 +62,17 @@ public class CurralService {
             throw new RuntimeException("Esse esp32 já esta vinculado a este curral");
         }
         curral.getEsp32().add(esp32);
-        return repository.save(curral);
+        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+    }
+
+    // buscar por id
+    public CurralResponseDTO buscarPorId(Long id) {
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Curral não encontrado")), CurralResponseDTO.class);
+    }
+
+    // listar todos
+    public List<CurralResponseDTO> listar() {
+        return DataMapper.parseListObjects(repository.findAll(),CurralResponseDTO.class);
     }
 
     // deletar

@@ -1,9 +1,11 @@
 package org.example.casodeuso2.service;
 
+import org.example.casodeuso2.dto.ESP32ResponseDTO;
 import org.example.casodeuso2.model.ESP32;
 import org.example.casodeuso2.model.Sensor;
 import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.SensorRepository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +38,7 @@ public class ESP32Service {
         return repository.save(esp32);
     }
 
-    public ESP32 adicionarSensor(Long esp32Id,Long sensorId) {
+    public ESP32ResponseDTO adicionarSensor(Long esp32Id, Long sensorId) {
         ESP32 esp32 = repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("Esp32 não encontrado"));
         Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
 
@@ -47,18 +49,17 @@ public class ESP32Service {
             throw new RuntimeException("Esse sensor já esta vinculado a este esp32");
         }
         esp32.getSensores().add(sensor);
-        return repository.save(esp32);
+        return DataMapper.parseObject(repository.save(esp32), ESP32ResponseDTO.class);
     }
 
     // listar todos
-    public List<ESP32> listar() {
-        return repository.findAll();
+    public List<ESP32ResponseDTO> listar() {
+        return DataMapper.parseListObjects(repository.findAll(), ESP32ResponseDTO.class);
     }
 
     // buscar por id
-    public ESP32 buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+    public ESP32ResponseDTO buscarPorId(Long id) {
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado")), ESP32ResponseDTO.class);
     }
 
     public ESP32 buscarPorMac(String mac) {
@@ -72,8 +73,8 @@ public class ESP32Service {
     }
 
     // buscar por nome
-    public List<ESP32> buscarPorNome(String nome) {
-        return repository.findByNome(nome);
+    public ESP32ResponseDTO buscarPorNome(String nome) {
+        return DataMapper.parseObject(repository.findByNome(nome),ESP32ResponseDTO.class);
     }
 
     // deletar

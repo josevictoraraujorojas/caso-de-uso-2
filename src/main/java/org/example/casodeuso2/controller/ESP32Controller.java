@@ -1,7 +1,6 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.Curral;
-import org.example.casodeuso2.model.ESP32;
+import org.example.casodeuso2.dto.ESP32ResponseDTO;
 import org.example.casodeuso2.service.ESP32Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,33 +17,27 @@ public class ESP32Controller {
         this.service = service;
     }
 
-    // POST
-    @PostMapping
-    public ESP32 criar(@RequestBody ESP32 esp32) {
-        return service.salvarOuAtualizar(esp32);
-    }
-
     //PUT
     @PutMapping("/{esp32Id}/sensor/{sensorId}")
-    public ESP32 adicionarSensor(@PathVariable Long esp32Id , @PathVariable Long sensorId) {
+    public ESP32ResponseDTO adicionarSensor(@PathVariable Long esp32Id , @PathVariable Long sensorId) {
         return service.adicionarSensor(esp32Id,sensorId);
     }
 
     // GET todos
     @GetMapping
-    public List<ESP32> listar() {
+    public List<ESP32ResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public ESP32 buscarPorId(@PathVariable Long id) {
+    public ESP32ResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
     // GET por nome
     @GetMapping("/nome")
-    public List<ESP32> buscarPorNome(@RequestParam String nome) {
+    public ESP32ResponseDTO buscarPorNome(@RequestParam String nome) {
         return service.buscarPorNome(nome);
     }
 

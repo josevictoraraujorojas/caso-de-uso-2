@@ -1,37 +1,25 @@
-package org.example.casodeuso2.model;
+package org.example.casodeuso2.dto;
 
-import jakarta.annotation.Nullable;
-import org.springframework.data.neo4j.core.schema.GeneratedValue;
-import org.springframework.data.neo4j.core.schema.Id;
-import org.springframework.data.neo4j.core.schema.Node;
-import org.springframework.data.neo4j.core.schema.Relationship;
-
+import org.example.casodeuso2.model.NivelRisco;
 import java.util.Date;
 
-@Node
-public class EventoAmbiental {
-    @Id
-    @GeneratedValue
-    private @Nullable Long id;
+public class EventoAmbientalResponseDTO {
+    private Long id;
     private String tipo;
     private NivelRisco nivelRisco;
     private Date timestamp;
     private float valorMedio;
-    @Relationship(type = "DERIVA_DE",direction = Relationship.Direction.OUTGOING)
-    private VariavelAmbiente variaveisAmbiente;
-    @Relationship(type = "OCORRE_EM",direction = Relationship.Direction.OUTGOING)
-    private Curral curral;
+    private VariavelAmbienteResponseDTO variaveisAmbiente;
+    private CurralResponseDTO curral;
 
-
-    public EventoAmbiental() {
+    public EventoAmbientalResponseDTO() {
     }
 
-    @Nullable
     public Long getId() {
         return id;
     }
 
-    public void setId(@Nullable Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -67,19 +55,19 @@ public class EventoAmbiental {
         this.valorMedio = valorMedio;
     }
 
-    public VariavelAmbiente getVariaveisAmbiente() {
+    public VariavelAmbienteResponseDTO getVariaveisAmbiente() {
         return variaveisAmbiente;
     }
 
-    public void setVariaveisAmbiente(VariavelAmbiente variaveisAmbiente) {
+    public void setVariaveisAmbiente(VariavelAmbienteResponseDTO variaveisAmbiente) {
         this.variaveisAmbiente = variaveisAmbiente;
     }
 
-    public Curral getCurral() {
+    public CurralResponseDTO getCurral() {
         return curral;
     }
 
-    public void setCurral(Curral curral) {
+    public void setCurral(CurralResponseDTO curral) {
         this.curral = curral;
     }
 }

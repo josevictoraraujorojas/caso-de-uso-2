@@ -1,8 +1,10 @@
 package org.example.casodeuso2.service;
 
-import org.example.casodeuso2.model.LimiteAmbiental;
+import org.example.casodeuso2.dto.PorcoCreateDTO;
+import org.example.casodeuso2.dto.PorcoResponseDTO;
 import org.example.casodeuso2.model.Porco;
 import org.example.casodeuso2.repository.PorcoRespository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,19 +20,18 @@ public class PorcoService {
     }
 
     // salvar
-    public Porco salvar(Porco porco) {
-        return repository.save(porco);
+    public PorcoResponseDTO salvar(PorcoCreateDTO porcoCreateDTO) {
+        return DataMapper.parseObject(repository.save(DataMapper.parseObject(porcoCreateDTO,Porco.class)),PorcoResponseDTO.class);
     }
 
     // listar todos
-    public List<Porco> listar() {
-        return (List<Porco>) repository.findAll();
+    public List<PorcoResponseDTO> listar() {
+        return DataMapper.parseListObjects(repository.findAll(),PorcoResponseDTO.class);
     }
 
     // buscar por id
-    public Porco buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Porco não encontrado"));
+    public PorcoResponseDTO buscarPorId(Long id) {
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Porco não encontrado")),PorcoResponseDTO.class);
     }
 
     // deletar

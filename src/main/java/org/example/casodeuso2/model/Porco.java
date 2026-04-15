@@ -4,8 +4,10 @@ import jakarta.annotation.Nullable;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
+import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.Date;
+import java.util.Set;
 
 @Node
 public class Porco {
@@ -18,6 +20,8 @@ public class Porco {
     private String nome;
     private Sexo sexo;
     private int lote;
+    @Relationship(type = "COMPOSTO_POR",direction = Relationship.Direction.INCOMING)
+    private Curral curral;
 
     public Porco() {
     }
@@ -77,6 +81,14 @@ public class Porco {
 
     public void setLote(int lote) {
         this.lote = lote;
+    }
+
+    public Curral getCurral() {
+        return curral;
+    }
+
+    public void setCurral(Curral curral) {
+        this.curral = curral;
     }
 
     @Override

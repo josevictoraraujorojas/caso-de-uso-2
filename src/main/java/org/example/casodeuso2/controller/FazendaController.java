@@ -1,6 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.Fazenda;
+import org.example.casodeuso2.dto.FazendaCreateDTO;
+import org.example.casodeuso2.dto.FazendaResponseDTO;
 import org.example.casodeuso2.service.FazendaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,25 +20,25 @@ public class FazendaController {
 
     // POST
     @PostMapping
-    public Fazenda criar(@RequestBody Fazenda fazenda) {
-        return service.salvar(fazenda);
+    public FazendaResponseDTO criar(@RequestBody FazendaCreateDTO fazendaCreateDTO) {
+        return service.salvar(fazendaCreateDTO);
     }
 
     //PUT
     @PutMapping("/{fazendaId}/curral/{curralId}")
-    public Fazenda adicionarCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
+    public FazendaResponseDTO adicionarCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
         return service.adicionarCurral(fazendaId, curralId);
     }
 
     // GET todos
     @GetMapping
-    public List<Fazenda> listar() {
+    public List<FazendaResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public Fazenda buscarPorId(@PathVariable Long id) {
+    public FazendaResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
@@ -48,7 +49,7 @@ public class FazendaController {
     }
 
     @DeleteMapping("/{fazendaId}/curral/{curralId}")
-    public Fazenda removerCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
+    public FazendaResponseDTO removerCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
         return service.removerCurral(fazendaId, curralId);
     }
 }

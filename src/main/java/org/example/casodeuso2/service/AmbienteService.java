@@ -5,8 +5,6 @@ import org.example.casodeuso2.repository.AmbienteRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -30,15 +28,5 @@ public class AmbienteService {
 
     public void deletarSensorData(String sensorId) {
         ambienteRepository.deletarSensorData(sensorId);
-    }
-
-    public void processarMensagem(AmbienteData data) {
-
-        if (data.getEsp32Id() == null) {
-            System.out.println("Dado inválido: esp32Id null");
-            return;
-        }
-        data.setTime(Instant.now());
-        salvarSensorData(data);
     }
 }

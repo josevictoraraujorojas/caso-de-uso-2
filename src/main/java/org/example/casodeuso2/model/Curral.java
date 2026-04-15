@@ -21,6 +21,8 @@ public class Curral {
     private Set<ESP32> esp32;
     @Relationship(type = "POSSUI_CURRAL",direction = Relationship.Direction.INCOMING)
     private Fazenda fazenda;
+    @Relationship(type = "OCORRE_EM",direction = Relationship.Direction.INCOMING)
+    private EventoAmbiental eventoAmbiental;
 
     public Curral() {
     }
@@ -72,6 +74,14 @@ public class Curral {
 
     public void setFazenda(Fazenda fazenda) {
         this.fazenda = fazenda;
+    }
+
+    public EventoAmbiental getEventoAmbiental() {
+        return eventoAmbiental;
+    }
+
+    public void setEventoAmbiental(EventoAmbiental eventoAmbiental) {
+        this.eventoAmbiental = eventoAmbiental;
     }
 
     @Override

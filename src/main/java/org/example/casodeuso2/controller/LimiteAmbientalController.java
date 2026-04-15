@@ -1,7 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.Fazenda;
-import org.example.casodeuso2.model.LimiteAmbiental;
+import org.example.casodeuso2.dto.LimiteAmbientalCreateDTO;
+import org.example.casodeuso2.dto.LimiteAmbientalResponseDTO;
 import org.example.casodeuso2.service.LimiteAmbientalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,19 +20,19 @@ public class LimiteAmbientalController {
 
     // POST
     @PostMapping
-    public LimiteAmbiental criar(@RequestBody LimiteAmbiental limiteAmbiental) {
-        return service.salvar(limiteAmbiental);
+    public LimiteAmbientalResponseDTO criar(@RequestBody LimiteAmbientalCreateDTO limiteAmbientalCreateDTO) {
+        return service.salvar(limiteAmbientalCreateDTO);
     }
 
     // GET todos
     @GetMapping
-    public List<LimiteAmbiental> listar() {
+    public List<LimiteAmbientalResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public LimiteAmbiental buscarPorId(@PathVariable Long id) {
+    public LimiteAmbientalResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 

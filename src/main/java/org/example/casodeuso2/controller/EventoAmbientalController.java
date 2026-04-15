@@ -1,7 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.EventoAmbiental;
-
+import org.example.casodeuso2.dto.EventoAmbientalCreateDTO;
+import org.example.casodeuso2.dto.EventoAmbientalResponseDTO;
 import org.example.casodeuso2.service.EventoAmbientalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,30 +20,30 @@ public class EventoAmbientalController {
 
     // POST
     @PostMapping
-    public EventoAmbiental criar(@RequestBody EventoAmbiental eventoAmbiental) {
-        return service.salvar(eventoAmbiental);
+    public EventoAmbientalResponseDTO criar(@RequestBody EventoAmbientalCreateDTO eventoAmbientalCreateDTO) {
+        return service.salvar(eventoAmbientalCreateDTO);
     }
 
     //PUT
     @PutMapping("/{eventoAmbienteId}/variavelAmbiente/{variavelAmbienteId}")
-    public EventoAmbiental adicionarVariavelAmbiente(@PathVariable Long eventoAmbienteId ,@PathVariable Long variavelAmbienteId) {
+    public EventoAmbientalResponseDTO adicionarVariavelAmbiente(@PathVariable Long eventoAmbienteId ,@PathVariable Long variavelAmbienteId) {
         return service.adicionarVaravelAmbiente(eventoAmbienteId,variavelAmbienteId);
     }
 
     @PutMapping("/{eventoAmbienteId}/curral/{curralId}")
-    public EventoAmbiental adicionarCurral(@PathVariable Long eventoAmbienteId ,@PathVariable Long curralId) {
+    public EventoAmbientalResponseDTO adicionarCurral(@PathVariable Long eventoAmbienteId ,@PathVariable Long curralId) {
         return service.adicionarCurral(eventoAmbienteId,curralId);
     }
 
     // GET todos
     @GetMapping
-    public List<EventoAmbiental> listar() {
+    public List<EventoAmbientalResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public EventoAmbiental buscarPorId(@PathVariable Long id) {
+    public EventoAmbientalResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 

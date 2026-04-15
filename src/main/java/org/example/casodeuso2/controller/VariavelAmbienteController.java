@@ -1,6 +1,7 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.model.VariavelAmbiente;
+import org.example.casodeuso2.dto.VariavelAmbienteCreateDTO;
+import org.example.casodeuso2.dto.VariavelAmbienteResponseDTO;
 import org.example.casodeuso2.service.VariavelAmbienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,25 +20,25 @@ public class VariavelAmbienteController {
 
     // POST
     @PostMapping
-    public VariavelAmbiente criar(@RequestBody VariavelAmbiente variavelAmbiente) {
-        return service.salvar(variavelAmbiente);
+    public VariavelAmbienteResponseDTO criar(@RequestBody VariavelAmbienteCreateDTO variavelAmbienteCreateDTO) {
+        return service.salvar(variavelAmbienteCreateDTO);
     }
 
     //PUT
     @PutMapping("/{variavelAmbienteId}/limiteAmbiental/{limiteId}")
-    public VariavelAmbiente adicionarSensor(@PathVariable Long variavelAmbienteId, @PathVariable Long limiteId) {
+    public VariavelAmbienteResponseDTO adicionarSensor(@PathVariable Long variavelAmbienteId, @PathVariable Long limiteId) {
         return service.adicionarLimiteAmbiental(variavelAmbienteId,limiteId);
     }
 
     // GET todos
     @GetMapping
-    public List<VariavelAmbiente> listar() {
+    public List<VariavelAmbienteResponseDTO> listar() {
         return service.listar();
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public VariavelAmbiente buscarPorId(@PathVariable Long id) {
+    public VariavelAmbienteResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 

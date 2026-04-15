@@ -20,6 +20,8 @@ public class Sensor {
     private Date dataCalibracao;
     @Relationship(type = "MEDE",direction = Relationship.Direction.OUTGOING)
     private Set<VariavelAmbiente> variaveisAmbientes;
+    @Relationship(type = "COLETA_DADOS_DE", direction = Relationship.Direction.INCOMING)
+    private ESP32 esp32;
 
     public Sensor() {
     }
@@ -63,6 +65,14 @@ public class Sensor {
 
     public void setVariaveisAmbientes(Set<VariavelAmbiente> variaveisAmbientes) {
         this.variaveisAmbientes = variaveisAmbientes;
+    }
+
+    public ESP32 getEsp32() {
+        return esp32;
+    }
+
+    public void setEsp32(ESP32 esp32) {
+        this.esp32 = esp32;
     }
 
     @Override

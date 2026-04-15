@@ -9,14 +9,15 @@ import org.example.casodeuso2.config.MQTTProperties;
 import org.example.casodeuso2.dto.AmbienteDataDTO;
 import org.example.casodeuso2.dto.ESP32DTO;
 import org.example.casodeuso2.model.*;
+import org.example.casodeuso2.repository.CurralRepository;
 import org.example.casodeuso2.service.AmbienteService;
 import org.example.casodeuso2.service.CurralService;
 import org.example.casodeuso2.service.ESP32Service;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 
 @Service
 public class MQTTListener {
@@ -25,20 +26,20 @@ public class MQTTListener {
     private final MQTTProperties properties;
     private final AmbienteService ambienteService;
     private final ESP32Service esp32Service;
-    private final CurralService curralService;
+    private final CurralRepository curralRepository;
     private final ObjectMapper mapper;
 
     public MQTTListener(MqttClient cliente,
                         MQTTProperties properties,
                         AmbienteService ambienteService,
-                        ESP32Service esp32Service, CurralService curralService,
+                        ESP32Service esp32Service, CurralService curralService, CurralRepository curralRepository,
                         ObjectMapper mapper) {
 
         this.cliente = cliente;
         this.properties = properties;
         this.ambienteService = ambienteService;
         this.esp32Service = esp32Service;
-        this.curralService = curralService;
+        this.curralRepository = curralRepository;
         this.mapper = mapper;
     }
 
@@ -98,31 +99,25 @@ public class MQTTListener {
 
 
         AmbienteDataDTO dto = mapper.readValue(payload, AmbienteDataDTO.class);
-
         ESP32 esp32 = esp32Service.buscarPorMac(dto.getEsp32Mac());
-
-        Curral curral = curralService.buscarPorId(esp32.getCurral().getId());
-
-
+        Optional<Curral> curral = Optional.ofNullable(curralRepository.findById(esp32.getCurral().getId()).orElseThrow(() -> new RuntimeException("Curral não encontrado")));
         Sensor sensor = esp32.getSensores()
                 .stream()
                 .filter(s -> s.getModelo().equalsIgnoreCase(dto.getSensor()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
-
         VariavelAmbiente variavelAmbiente = sensor.getVariaveisAmbientes()
                 .stream()
                 .filter(v -> v.getNome().equalsIgnoreCase(dto.getCampo()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Variável não encontrada"));
 
-
         AmbienteData ambiente = new AmbienteData();
         ambiente.setEsp32Id(esp32.getId());
         ambiente.setValor(dto.getValor());
         ambiente.setSensorId(sensor.getId());
         ambiente.setCurralId(esp32.getCurral().getId());
-        ambiente.setFazendaId(curral.getFazenda().getId());
+        ambiente.setFazendaId(curral.get().getFazenda().getId());
         ambiente.setVariavelId(variavelAmbiente.getId());
 
         ambienteService.salvarSensorData(ambiente);

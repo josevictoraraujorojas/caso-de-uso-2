@@ -1,9 +1,12 @@
 package org.example.casodeuso2.service;
 
+import org.example.casodeuso2.dto.SensorCreateDto;
+import org.example.casodeuso2.dto.SensorResponseDTO;
 import org.example.casodeuso2.model.Sensor;
 import org.example.casodeuso2.model.VariavelAmbiente;
 import org.example.casodeuso2.repository.SensorRepository;
 import org.example.casodeuso2.repository.VariavelAmbienteRepository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +25,11 @@ public class SensorService {
     }
 
     // salvar
-    public Sensor salvar(Sensor sensor) {
-        return repository.save(sensor);
+    public SensorResponseDTO salvar(SensorCreateDto sensorCreateDto) {
+        return DataMapper.parseObject(repository.save(DataMapper.parseObject(sensorCreateDto,Sensor.class)),SensorResponseDTO.class);
     }
 
-    public Sensor adicionarVariavelAmbiente(Long sensorId,Long variavelAmbienteId) {
+    public SensorResponseDTO adicionarVariavelAmbiente(Long sensorId,Long variavelAmbienteId) {
         Sensor sensor = repository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
         VariavelAmbiente variavelAmbiente = variavelAmbienteRepository.findById(variavelAmbienteId).orElseThrow(() -> new RuntimeException("Variavel de ambiente não encontrado"));
 
@@ -37,18 +40,17 @@ public class SensorService {
             throw new RuntimeException("Essa Variavel de Ambiente já esta vinculada com este Sensor");
         }
         sensor.getVariaveisAmbientes().add(variavelAmbiente);
-        return repository.save(sensor);
+        return DataMapper.parseObject(repository.save(sensor),SensorResponseDTO.class);
     }
 
     // listar todos
-    public List<Sensor> listar() {
-        return repository.findAll();
+    public List<SensorResponseDTO> listar() {
+        return DataMapper.parseListObjects(repository.findAll(),SensorResponseDTO.class);
     }
 
     // buscar por id
-    public Sensor buscarPorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+    public SensorResponseDTO buscarPorId(Long id) {
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Sensor não encontrado")),SensorResponseDTO.class);
     }
 
     // deletar
