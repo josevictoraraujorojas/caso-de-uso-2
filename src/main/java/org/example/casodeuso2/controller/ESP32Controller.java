@@ -46,4 +46,9 @@ public class ESP32Controller {
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
     }
+
+    @DeleteMapping("/{esp32Id}/sensor/{sensorId}")
+    public ESP32ResponseDTO removerSensor(@PathVariable Long esp32Id , @PathVariable Long sensorId) {
+        return service.removerSensor(esp32Id,sensorId);
+    }
 }

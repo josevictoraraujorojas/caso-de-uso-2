@@ -53,4 +53,14 @@ public class EventoAmbientalController {
         service.deletar(id);
     }
 
+    @DeleteMapping("/{eventoAmbienteId}/esp32/{esp32Id}")
+    public EventoAmbientalResponseDTO removerEsp32(@PathVariable Long eventoAmbienteId ,@PathVariable Long esp32Id) {
+        return service.removerEsp32(eventoAmbienteId,esp32Id);
+    }
+
+    @DeleteMapping("/{eventoAmbienteId}/curral/{curralId}")
+    public EventoAmbientalResponseDTO removerCurral(@PathVariable Long eventoAmbienteId ,@PathVariable Long curralId) {
+        return service.removerCurral(eventoAmbienteId,curralId);
+    }
+
 }

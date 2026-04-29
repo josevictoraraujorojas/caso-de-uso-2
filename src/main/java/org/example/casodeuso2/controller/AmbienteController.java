@@ -1,6 +1,5 @@
 package org.example.casodeuso2.controller;
 
-import org.example.casodeuso2.dto.AmbienteDataDTO;
 import org.example.casodeuso2.model.AmbienteData;
 import org.example.casodeuso2.service.AmbienteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,15 @@ public class AmbienteController {
     @GetMapping
     public List<AmbienteData> consultarSensores() {
         return ambienteService.consultarSensoresData();
+    }
+
+    @GetMapping("/esp32/{esp32Id}")
+    public List<AmbienteData> consultarPorEsp32(@PathVariable Long esp32Id) {
+        return ambienteService.consultarPorEsp32(esp32Id);
+    }
+    @GetMapping("/variavel/{variavelId}")
+    public List<AmbienteData> consultarPorVariavel(@PathVariable Long variavelId) {
+        return ambienteService.consultarPorVariavel(variavelId);
     }
 
     @DeleteMapping("/{esp32Id}")

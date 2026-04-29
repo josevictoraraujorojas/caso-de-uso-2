@@ -47,4 +47,9 @@ public class SensorController {
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
     }
+
+    @DeleteMapping("/{sensorId}/variavelAmbiente/{variavelAmbienteId}")
+    public SensorResponseDTO removerSensor(@PathVariable Long sensorId , @PathVariable Long variavelAmbienteId) {
+        return service.removerVariavelAmbiente(sensorId, variavelAmbienteId);
+    }
 }

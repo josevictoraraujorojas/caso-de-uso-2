@@ -26,6 +26,15 @@ public class AmbienteService {
         return ambienteRepository.consultarSensoresData();
     }
 
+    public List<AmbienteData> consultarPorEsp32(Long esp32Id){
+        return ambienteRepository.consultarPorEsp32(esp32Id);
+    }
+
+    public List<AmbienteData> consultarPorVariavel(Long variavelId){
+        return ambienteRepository.consultarPorVariavel(variavelId);
+    }
+
+
     public void deletarSensorData(String sensorId) {
         ambienteRepository.deletarSensorData(sensorId);
     }

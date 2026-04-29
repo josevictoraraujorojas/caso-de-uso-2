@@ -16,8 +16,6 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.springframework.expression.common.ExpressionUtils.toLong;
-
 @Repository
 public class AmbienteRepositoryImpl implements AmbienteRepository {
 
@@ -47,6 +45,85 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
                 "from(bucket: \"" + bucket + "\") " +
                         "|> range(start: 0) " +
                         "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
+                        "|> sort(columns: [\"_time\"], desc: false)";
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FluxTable> tables = queryApi.query(flux, org);
+
+        List<AmbienteData> resultado = new ArrayList<>();
+
+        for (FluxTable table : tables) {
+            for (FluxRecord record : table.getRecords()) {
+
+                AmbienteData data = new AmbienteData();
+
+                data.setTime(record.getTime());
+
+                Object value = record.getValueByKey("_value");
+                if (value instanceof Number n) {
+                    data.setValor(n.doubleValue());
+                }
+
+                data.setCurralId(toLong(record.getValueByKey("curral_id")));
+                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
+                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
+                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
+                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
+
+                resultado.add(data);
+            }
+        }
+
+        return resultado;
+    }
+    @Override
+    public List<AmbienteData> consultarPorEsp32(Long esp32Id) {
+
+        String flux =
+                "from(bucket: \"" + bucket + "\") " +
+                        "|> range(start: 0) " +
+                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
+                        "|> filter(fn: (r) => r.esp32_id == \"" + esp32Id + "\") " +
+                        "|> sort(columns: [\"_time\"], desc: false)";
+
+        QueryApi queryApi = influxDBClient.getQueryApi();
+        List<FluxTable> tables = queryApi.query(flux, org);
+
+        List<AmbienteData> resultado = new ArrayList<>();
+
+        for (FluxTable table : tables) {
+            for (FluxRecord record : table.getRecords()) {
+
+                AmbienteData data = new AmbienteData();
+
+                data.setTime(record.getTime());
+
+                Object value = record.getValueByKey("_value");
+                if (value instanceof Number n) {
+                    data.setValor(n.doubleValue());
+                }
+
+                data.setCurralId(toLong(record.getValueByKey("curral_id")));
+                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
+                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
+                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
+                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
+
+                resultado.add(data);
+            }
+        }
+
+        return resultado;
+    }
+
+    @Override
+    public List<AmbienteData> consultarPorVariavel(Long variavelId) {
+
+        String flux =
+                "from(bucket: \"" + bucket + "\") " +
+                        "|> range(start: 0) " +
+                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
+                        "|> filter(fn: (r) => r.variavel_id == \"" + variavelId + "\") " +
                         "|> sort(columns: [\"_time\"], desc: false)";
 
         QueryApi queryApi = influxDBClient.getQueryApi();

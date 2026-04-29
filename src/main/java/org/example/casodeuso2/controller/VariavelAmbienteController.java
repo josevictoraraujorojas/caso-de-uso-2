@@ -47,4 +47,9 @@ public class VariavelAmbienteController {
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
     }
+
+    @DeleteMapping("/{variavelAmbienteId}/limiteAmbiental/{limiteId}")
+    public VariavelAmbienteResponseDTO removerSensor(@PathVariable Long variavelAmbienteId, @PathVariable Long limiteId) {
+        return service.removerLimiteAmbiental(variavelAmbienteId,limiteId);
+    }
 }

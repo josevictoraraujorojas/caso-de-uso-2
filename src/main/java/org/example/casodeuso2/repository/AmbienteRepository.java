@@ -10,6 +10,10 @@ public interface AmbienteRepository {
 
     public List<AmbienteData> consultarSensoresData();
 
+    public List<AmbienteData> consultarPorEsp32(Long esp32Id);
+
+    public List<AmbienteData> consultarPorVariavel(Long variavelId);
+
     public void deletarSensorData(String esp32Id);
 
 }

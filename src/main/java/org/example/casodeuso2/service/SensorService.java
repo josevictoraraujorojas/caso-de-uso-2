@@ -57,4 +57,18 @@ public class SensorService {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    public SensorResponseDTO removerVariavelAmbiente(Long sensorId,Long variavelAmbienteId) {
+        Sensor sensor = repository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+        VariavelAmbiente variavelAmbiente = variavelAmbienteRepository.findById(variavelAmbienteId).orElseThrow(() -> new RuntimeException("Variavel de ambiente não encontrado"));
+
+        if (sensor.getVariaveisAmbientes()==null){
+            throw new RuntimeException("Esse Sensor ambiental não possui Variavel de ambiente");
+        }
+        if (!sensor.getVariaveisAmbientes().contains(variavelAmbiente)){
+            throw new RuntimeException("Essa Variavel de Ambiente não esta vinculada com este Sensor");
+        }
+        sensor.getVariaveisAmbientes().remove(variavelAmbiente);
+        return DataMapper.parseObject(repository.save(sensor),SensorResponseDTO.class);
+    }
 }

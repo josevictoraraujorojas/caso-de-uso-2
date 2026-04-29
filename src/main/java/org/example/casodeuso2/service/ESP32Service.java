@@ -81,4 +81,18 @@ public class ESP32Service {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    public ESP32ResponseDTO removerSensor(Long esp32Id, Long sensorId) {
+        ESP32 esp32 = repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("Esp32 não encontrado"));
+        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+
+        if (esp32.getSensores()==null){
+            throw new RuntimeException("Esse esp32 não possui sensores");
+        }
+        if (!esp32.getSensores().contains(sensor)){
+            throw new RuntimeException("Esse sensor não está vinculado a esse esp32");
+        }
+        esp32.getSensores().remove(sensor);
+        return DataMapper.parseObject(repository.save(esp32), ESP32ResponseDTO.class);
+    }
 }

@@ -57,4 +57,17 @@ public class VariavelAmbienteService {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    public VariavelAmbienteResponseDTO removerLimiteAmbiental(Long variavelAmbientalId,Long limiteAmbientalId) {
+        VariavelAmbiente variavelAmbiente = repository.findById(variavelAmbientalId).orElseThrow(() -> new RuntimeException("Variavel de Ambiente não encontrada"));
+        LimiteAmbiental limiteAmbiental = limiteAmbientalRepository.findById(limiteAmbientalId).orElseThrow(() -> new RuntimeException("Limite Ambiental nâo encontrado"));
+        if (variavelAmbiente.getLimite()==null){
+            throw new RuntimeException("Essa Variavel ambiental não possui Limite ambiental");
+        }
+        if (!Objects.equals(variavelAmbiente.getLimite().getId(), limiteAmbiental.getId())) {
+            throw new RuntimeException("Esse Limite não esta vinculada com esta Variavel de Ambiente");
+        }
+        variavelAmbiente.setLimite(null);
+        return DataMapper.parseObject(repository.save(variavelAmbiente),VariavelAmbienteResponseDTO.class);
+    }
 }

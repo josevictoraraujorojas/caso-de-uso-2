@@ -100,6 +100,9 @@ public class MQTTListener {
 
         AmbienteDataDTO dto = mapper.readValue(payload, AmbienteDataDTO.class);
         ESP32 esp32 = esp32Service.buscarPorMac(dto.getEsp32Mac());
+        if(esp32.getCurral()==null){
+            throw new RuntimeException("Esp32 nao possui curral");
+        }
         Optional<Curral> curral = Optional.ofNullable(curralRepository.findById(esp32.getCurral().getId()).orElseThrow(() -> new RuntimeException("Curral não encontrado")));
         Sensor sensor = esp32.getSensores()
                 .stream()
@@ -123,7 +126,7 @@ public class MQTTListener {
         ambienteService.salvarSensorData(ambiente);
     }
 
-    private void processarEsp32(String payload) throws Exception {
+    private void processarEsp32(String payload) {
 
         ESP32DTO dto = mapper.readValue(payload, ESP32DTO.class);
 

@@ -79,4 +79,35 @@ public class CurralService {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    public CurralResponseDTO removerPorco(Long curralId, Long porcoId){
+        Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
+        Porco porco = porcoRespository.findById(porcoId).orElseThrow(() -> new RuntimeException("Porco não encontrado"));
+
+        if (curral.getPorcos()==null){
+            throw new RuntimeException("Esse curral não possui porcos");
+        }
+        if (!curral.getPorcos().contains(porco)){
+            throw new RuntimeException("Esse porco não está vinculado a esse curral");
+        }
+
+        curral.getPorcos().remove(porco);
+        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+    }
+
+    public CurralResponseDTO removerEsp32(Long curralId, Long esp32Id ) {
+        Curral curral = repository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrado"));
+        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+
+        if (curral.getEsp32() == null) {
+            throw new RuntimeException("Esse curral não possui Esps");
+        }
+        if (!curral.getEsp32().contains(esp32)) {
+            throw new RuntimeException("Esse esp32 não está vinculado a esse curral");
+        }
+
+            curral.getEsp32().remove(esp32);
+            return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+
+    }
 }

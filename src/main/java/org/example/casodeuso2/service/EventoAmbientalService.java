@@ -79,4 +79,33 @@ public class EventoAmbientalService {
     public void deletar(Long id) {
         repository.deleteById(id);
     }
+
+    public EventoAmbientalResponseDTO removerEsp32(Long eventoAmbientalId, Long esp32Id){
+        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
+        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+
+        if (eventoAmbiental.getEsp32()==null){
+            throw new RuntimeException("Esse Evento ambiental não possui esp32");
+        }
+        if (!Objects.equals(eventoAmbiental.getEsp32().getId(), esp32.getId())) {
+            throw new RuntimeException("Esse esp32 não esta vinculado a este Evento Ambiental");
+        }
+        eventoAmbiental.setEsp32(null);
+        return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
+    }
+
+    public EventoAmbientalResponseDTO removerCurral(Long eventoAmbientalId, Long curralId){
+        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
+        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrado"));
+
+        if (eventoAmbiental.getCurral()==null){
+            throw new RuntimeException("Esse Evento ambiental não possui curral");
+        }
+
+        if (!Objects.equals(eventoAmbiental.getCurral().getId(), curral.getId())) {
+            throw new RuntimeException("Esse curral não esta vinculado a este Evento Ambiental");
+        }
+        eventoAmbiental.setCurral(null);
+        return DataMapper.parseObject(repository.save(eventoAmbiental),EventoAmbientalResponseDTO.class);
+    }
 }

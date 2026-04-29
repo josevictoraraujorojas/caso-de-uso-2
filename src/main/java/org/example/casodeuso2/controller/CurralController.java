@@ -2,7 +2,6 @@ package org.example.casodeuso2.controller;
 
 import org.example.casodeuso2.dto.CurralCreateDTO;
 import org.example.casodeuso2.dto.CurralResponseDTO;
-import org.example.casodeuso2.model.Curral;
 import org.example.casodeuso2.service.CurralService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +51,16 @@ public class CurralController {
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Long id) {
         service.deletar(id);
+    }
+
+    @DeleteMapping("/{curralId}/porco/{porcoId}")
+    public CurralResponseDTO removerPorco(@PathVariable Long curralId , @PathVariable Long porcoId) {
+        return service.removerPorco(curralId, porcoId);
+    }
+
+    @DeleteMapping("/{curralId}/esp32/{esp32Id}")
+    public CurralResponseDTO removerEsp32(@PathVariable Long curralId , @PathVariable Long esp32Id) {
+        return service.removerEsp32(curralId, esp32Id);
     }
 
 }
