@@ -61,7 +61,7 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
                 Object value = record.getValueByKey("_value");
                 if (value instanceof Number n) {
-                    data.setValor(n.doubleValue());
+                    data.setValor((float) n.doubleValue());
                 }
 
                 data.setCurralId(toLong(record.getValueByKey("curral_id")));
@@ -100,7 +100,7 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
                 Object value = record.getValueByKey("_value");
                 if (value instanceof Number n) {
-                    data.setValor(n.doubleValue());
+                    data.setValor((float) n.doubleValue());
                 }
 
                 data.setCurralId(toLong(record.getValueByKey("curral_id")));
@@ -140,7 +140,7 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
                 Object value = record.getValueByKey("_value");
                 if (value instanceof Number n) {
-                    data.setValor(n.doubleValue());
+                    data.setValor((float) n.doubleValue());
                 }
 
                 data.setCurralId(toLong(record.getValueByKey("curral_id")));

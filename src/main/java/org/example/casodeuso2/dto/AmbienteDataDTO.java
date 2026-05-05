@@ -2,7 +2,7 @@ package org.example.casodeuso2.dto;
 
 public class AmbienteDataDTO {
 
-    private Double valor;
+    private float valor;
     private String campo;
     private String esp32Mac;
     private String sensor;
@@ -10,11 +10,11 @@ public class AmbienteDataDTO {
     public AmbienteDataDTO() {
     }
 
-    public Double getValor() {
+    public float getValor() {
         return valor;
     }
 
-    public void setValor(Double valor) {
+    public void setValor(float valor) {
         this.valor = valor;
     }
 

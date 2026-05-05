@@ -9,6 +9,7 @@ public class EventoAmbientalResponseDTO {
     private NivelRisco nivelRisco;
     private Date timestamp;
     private float valorMedio;
+    private boolean ativo;
     private VariavelAmbienteResponseDTO variaveisAmbiente;
     private ESP32ResponseDTO esp32;
 
@@ -69,5 +70,13 @@ public class EventoAmbientalResponseDTO {
 
     public void setEsp32(ESP32ResponseDTO esp32) {
         this.esp32 = esp32;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 }

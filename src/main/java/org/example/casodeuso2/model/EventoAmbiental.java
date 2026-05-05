@@ -17,10 +17,12 @@ public class EventoAmbiental {
     private NivelRisco nivelRisco;
     private Date timestamp;
     private float valorMedio;
+    private boolean ativo;
     @Relationship(type = "DERIVA_DE",direction = Relationship.Direction.OUTGOING)
     private ESP32 esp32;
     @Relationship(type = "OCORRE_EM",direction = Relationship.Direction.OUTGOING)
     private Curral curral;
+
 
 
     public EventoAmbiental() {
@@ -65,6 +67,14 @@ public class EventoAmbiental {
 
     public void setValorMedio(float valorMedio) {
         this.valorMedio = valorMedio;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
     }
 
     public ESP32 getEsp32() {

@@ -12,7 +12,7 @@ public class AmbienteData implements Serializable {
     private Instant time;
 
     @Column(name = "_value")
-    private Double valor;
+    private float valor;
 
     @Column(name = "curral_id", tag = true)
     private Long curralId;
@@ -40,11 +40,11 @@ public class AmbienteData implements Serializable {
         this.time = time;
     }
 
-    public Double getValor() {
+    public float getValor() {
         return valor;
     }
 
-    public void setValor(Double valor) {
+    public void setValor(float valor) {
         this.valor = valor;
     }
 
