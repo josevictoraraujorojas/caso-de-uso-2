@@ -10,7 +10,9 @@ import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.PorcoRespository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,86 +30,178 @@ public class CurralService {
         this.esp32Repository = esp32Repository;
     }
 
-    // salvar
     public CurralResponseDTO salvar(CurralCreateDTO curralCreateDTO) {
         Curral curral = DataMapper.parseObject(curralCreateDTO, Curral.class);
         return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
     }
 
+    public CurralResponseDTO editar(Long curralId, CurralCreateDTO curralCreateDTO) {
+
+        Curral curral = repository.findById(curralId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
+
+        curral.setNome(curralCreateDTO.getNome());
+        curral.setCapacidade(curralCreateDTO.getCapacidade());
+
+        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+    }
+
     public CurralResponseDTO adicionarPorco(Long curralId, Long porcoId){
-        Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
-        Porco porco = porcoRespository.findById(porcoId).orElseThrow(() -> new RuntimeException("Porco não encontrado"));
+        Curral curral = repository.findById(curralId).orElseThrow(()-> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Curral não encontrado"
+        ));
+        Porco porco = porcoRespository.findById(porcoId).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Porco não encontrado"
+        ));
 
         if (curral.getPorcos()==null){
             curral.setPorcos(new HashSet<>());
         }
         if (curral.getPorcos().contains(porco)){
-            throw new RuntimeException("Esse porco já esta vinculado a este curral");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse porco já está vinculado a este curral"
+            );
         }
         if (curral.getPorcos().size() >= curral.getCapacidade()){
-            throw new RuntimeException("Curral já esta cheio");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Curral já está cheio"
+            );
         }
         curral.getPorcos().add(porco);
         return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
     }
 
-    public CurralResponseDTO adicionarEsp32(Long curralId, Long esp32Id ){
-        Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
-        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(()-> new RuntimeException("ESP32 não encontrado"));
+    public CurralResponseDTO adicionarEsp32(Long curralId, Long esp32Id) {
 
-        if (curral.getEsp32()==null){
+        Curral curral = repository.findById(curralId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
+
+        ESP32 esp32 = esp32Repository.findById(esp32Id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        if (curral.getEsp32() == null) {
             curral.setEsp32(new HashSet<>());
         }
-        if (curral.getEsp32().contains(esp32)){
-            throw new RuntimeException("Esse esp32 já esta vinculado a este curral");
+
+        if (curral.getEsp32().contains(esp32)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse ESP32 já está vinculado a este curral"
+            );
         }
+
         curral.getEsp32().add(esp32);
-        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(curral),
+                CurralResponseDTO.class
+        );
     }
 
-    // buscar por id
     public CurralResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Curral não encontrado")), CurralResponseDTO.class);
+        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Curral não encontrado"
+        )), CurralResponseDTO.class);
     }
 
-    // listar todos
     public List<CurralResponseDTO> listar() {
         return DataMapper.parseListObjects(repository.findAll(),CurralResponseDTO.class);
     }
 
-    // deletar
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        Curral curral = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
+
+        repository.delete(curral);
     }
 
-    public CurralResponseDTO removerPorco(Long curralId, Long porcoId){
-        Curral curral = repository.findById(curralId).orElseThrow(()-> new RuntimeException("Curral não encontrado"));
-        Porco porco = porcoRespository.findById(porcoId).orElseThrow(() -> new RuntimeException("Porco não encontrado"));
+    public CurralResponseDTO removerPorco(Long curralId, Long porcoId) {
 
-        if (curral.getPorcos()==null){
-            throw new RuntimeException("Esse curral não possui porcos");
+        Curral curral = repository.findById(curralId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
+
+        Porco porco = porcoRespository.findById(porcoId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Porco não encontrado"
+                ));
+
+        if (curral.getPorcos() == null || curral.getPorcos().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse curral não possui porcos"
+            );
         }
-        if (!curral.getPorcos().contains(porco)){
-            throw new RuntimeException("Esse porco não está vinculado a esse curral");
+
+        if (!curral.getPorcos().contains(porco)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse porco não está vinculado a esse curral"
+            );
         }
 
         curral.getPorcos().remove(porco);
-        return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(curral),
+                CurralResponseDTO.class
+        );
     }
 
-    public CurralResponseDTO removerEsp32(Long curralId, Long esp32Id ) {
-        Curral curral = repository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrado"));
-        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+    public CurralResponseDTO removerEsp32(Long curralId, Long esp32Id) {
 
-        if (curral.getEsp32() == null) {
-            throw new RuntimeException("Esse curral não possui Esps");
+        Curral curral = repository.findById(curralId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
+
+        ESP32 esp32 = esp32Repository.findById(esp32Id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        if (curral.getEsp32() == null || curral.getEsp32().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse curral não possui ESP32 vinculados"
+            );
         }
+
         if (!curral.getEsp32().contains(esp32)) {
-            throw new RuntimeException("Esse esp32 não está vinculado a esse curral");
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse ESP32 não está vinculado a esse curral"
+            );
         }
 
-            curral.getEsp32().remove(esp32);
-            return DataMapper.parseObject(repository.save(curral), CurralResponseDTO.class);
+        curral.getEsp32().remove(esp32);
 
+        return DataMapper.parseObject(
+                repository.save(curral),
+                CurralResponseDTO.class
+        );
     }
 }

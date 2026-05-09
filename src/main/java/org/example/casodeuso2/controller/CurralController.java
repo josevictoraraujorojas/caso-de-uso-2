@@ -4,6 +4,7 @@ import org.example.casodeuso2.dto.CurralCreateDTO;
 import org.example.casodeuso2.dto.CurralResponseDTO;
 import org.example.casodeuso2.service.CurralService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,47 +21,71 @@ public class CurralController {
 
     // POST
     @PostMapping
-    public CurralResponseDTO criar(@RequestBody CurralCreateDTO curralCreateDTO) {
-        return service.salvar(curralCreateDTO);
+    public ResponseEntity<CurralResponseDTO> criar(@RequestBody CurralCreateDTO curralCreateDTO) {
+        CurralResponseDTO response = service.salvar(curralCreateDTO);
+        return ResponseEntity.ok(response);
     }
 
-    //PUT
+    // PUT
+    @PutMapping("/{curralId}")
+    public ResponseEntity<CurralResponseDTO> atualizar(
+            @PathVariable Long curralId,
+            @RequestBody CurralCreateDTO curralCreateDTO) {
+
+        CurralResponseDTO response = service.editar(curralId, curralCreateDTO);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/{curralId}/porco/{porcoId}")
-    public CurralResponseDTO adicionarPorco(@PathVariable Long curralId , @PathVariable Long porcoId) {
-        return service.adicionarPorco(curralId, porcoId);
+    public ResponseEntity<CurralResponseDTO> adicionarPorco(@PathVariable Long curralId , @PathVariable Long porcoId) {
+        CurralResponseDTO response = service.adicionarPorco(curralId, porcoId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{curralId}/esp32/{esp32Id}")
-    public CurralResponseDTO adicionarEsp32(@PathVariable Long curralId , @PathVariable Long esp32Id) {
-        return service.adicionarEsp32(curralId, esp32Id);
+    public ResponseEntity<CurralResponseDTO> adicionarEsp32(@PathVariable Long curralId , @PathVariable Long esp32Id) {
+        CurralResponseDTO response = service.adicionarEsp32(curralId, esp32Id);
+        return ResponseEntity.ok(response);
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public CurralResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public ResponseEntity<CurralResponseDTO> buscarPorId(@PathVariable Long id) {
+        CurralResponseDTO response = service.buscarPorId(id);
+        return ResponseEntity.ok(response);
     }
 
     // GET todos
     @GetMapping
-    public List<CurralResponseDTO> listar() {
-        return service.listar();
+    public ResponseEntity<List<CurralResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listar());
     }
 
     // DELETE
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{curralId}/porco/{porcoId}")
-    public CurralResponseDTO removerPorco(@PathVariable Long curralId , @PathVariable Long porcoId) {
-        return service.removerPorco(curralId, porcoId);
+    public ResponseEntity<CurralResponseDTO> removerPorco(@PathVariable Long curralId , @PathVariable Long porcoId) {
+        return ResponseEntity.ok(
+                service.removerPorco(curralId, porcoId)
+        );
     }
 
     @DeleteMapping("/{curralId}/esp32/{esp32Id}")
-    public CurralResponseDTO removerEsp32(@PathVariable Long curralId , @PathVariable Long esp32Id) {
-        return service.removerEsp32(curralId, esp32Id);
+    public ResponseEntity<CurralResponseDTO> removerEsp32(
+            @PathVariable Long curralId,
+            @PathVariable Long esp32Id) {
+
+        return ResponseEntity.ok(
+                service.removerEsp32(curralId, esp32Id)
+        );
     }
 
 }
