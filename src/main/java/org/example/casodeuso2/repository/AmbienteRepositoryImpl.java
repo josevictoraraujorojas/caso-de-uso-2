@@ -19,6 +19,8 @@ import java.util.List;
 @Repository
 public class AmbienteRepositoryImpl implements AmbienteRepository {
 
+    private static final String MEASUREMENT = "medicoes_ambientais";
+
     private final InfluxDBClient influxDBClient;
 
     @Value("${influx.bucket}")
@@ -33,157 +35,109 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
     @Override
     public void salvarSensorData(AmbienteData data) {
-        WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
         data.setTime(Instant.now());
+
+        WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
         writeApi.writeMeasurement(WritePrecision.MS, data);
     }
 
     @Override
     public List<AmbienteData> consultarSensoresData() {
-
-        String flux =
-                "from(bucket: \"" + bucket + "\") " +
-                        "|> range(start: 0) " +
-                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
-                        "|> sort(columns: [\"_time\"], desc: false)";
-
-        QueryApi queryApi = influxDBClient.getQueryApi();
-        List<FluxTable> tables = queryApi.query(flux, org);
-
-        List<AmbienteData> resultado = new ArrayList<>();
-
-        for (FluxTable table : tables) {
-            for (FluxRecord record : table.getRecords()) {
-
-                AmbienteData data = new AmbienteData();
-
-                data.setTime(record.getTime());
-
-                Object value = record.getValueByKey("_value");
-                if (value instanceof Number n) {
-                    data.setValor((float) n.doubleValue());
-                }
-
-                data.setCurralId(toLong(record.getValueByKey("curral_id")));
-                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
-                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
-                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
-                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
-
-                resultado.add(data);
-            }
-        }
-
-        return resultado;
+        return executarConsulta("");
     }
+
     @Override
     public List<AmbienteData> consultarPorEsp32(Long esp32Id) {
-
-        String flux =
-                "from(bucket: \"" + bucket + "\") " +
-                        "|> range(start: 0) " +
-                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
-                        "|> filter(fn: (r) => r.esp32_id == \"" + esp32Id + "\") " +
-                        "|> sort(columns: [\"_time\"], desc: false)";
-
-        QueryApi queryApi = influxDBClient.getQueryApi();
-        List<FluxTable> tables = queryApi.query(flux, org);
-
-        List<AmbienteData> resultado = new ArrayList<>();
-
-        for (FluxTable table : tables) {
-            for (FluxRecord record : table.getRecords()) {
-
-                AmbienteData data = new AmbienteData();
-
-                data.setTime(record.getTime());
-
-                Object value = record.getValueByKey("_value");
-                if (value instanceof Number n) {
-                    data.setValor((float) n.doubleValue());
-                }
-
-                data.setCurralId(toLong(record.getValueByKey("curral_id")));
-                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
-                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
-                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
-                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
-
-                resultado.add(data);
-            }
-        }
-
-        return resultado;
+        return executarConsulta(
+                "|> filter(fn: (r) => r.esp32_id == \"" + esp32Id + "\") "
+        );
     }
 
     @Override
     public List<AmbienteData> consultarPorVariavel(Long variavelId) {
+        return executarConsulta(
+                "|> filter(fn: (r) => r.variavel_id == \"" + variavelId + "\") "
+        );
+    }
 
-        String flux =
-                "from(bucket: \"" + bucket + "\") " +
-                        "|> range(start: 0) " +
-                        "|> filter(fn: (r) => r._measurement == \"medicoes_ambientais\") " +
-                        "|> filter(fn: (r) => r.variavel_id == \"" + variavelId + "\") " +
-                        "|> sort(columns: [\"_time\"], desc: false)";
+    @Override
+    public void deletarSensorData(String esp32Id) {
+
+        if (esp32Id == null || esp32Id.isBlank()) {
+            throw new IllegalArgumentException("esp32Id não pode ser vazio");
+        }
+
+        try {
+
+            OffsetDateTime start = OffsetDateTime.parse("1970-01-01T00:00:00Z");
+            OffsetDateTime stop = OffsetDateTime.now();
+
+            String predicate =
+                    "_measurement=\"" + MEASUREMENT + "\" AND esp32_id=\"" + esp32Id + "\"";
+
+            DeleteApi deleteApi = influxDBClient.getDeleteApi();
+
+            deleteApi.delete(start, stop, predicate, bucket, org);
+
+            System.out.println("Dados deletados com sucesso.");
+
+        } catch (Exception e) {
+            System.err.println("Erro ao deletar dados: " + e.getMessage());
+        }
+    }
+
+    private List<AmbienteData> executarConsulta(String filtro) {
+
+        String flux = """
+                from(bucket: "%s")
+                |> range(start: 0)
+                |> filter(fn: (r) => r._measurement == "%s")
+                %s
+                |> sort(columns: ["_time"], desc: false)
+                """.formatted(bucket, MEASUREMENT, filtro);
 
         QueryApi queryApi = influxDBClient.getQueryApi();
+
         List<FluxTable> tables = queryApi.query(flux, org);
 
         List<AmbienteData> resultado = new ArrayList<>();
 
         for (FluxTable table : tables) {
             for (FluxRecord record : table.getRecords()) {
-
-                AmbienteData data = new AmbienteData();
-
-                data.setTime(record.getTime());
-
-                Object value = record.getValueByKey("_value");
-                if (value instanceof Number n) {
-                    data.setValor((float) n.doubleValue());
-                }
-
-                data.setCurralId(toLong(record.getValueByKey("curral_id")));
-                data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
-                data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
-                data.setSensorId(toLong(record.getValueByKey("sensor_id")));
-                data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
-
-                resultado.add(data);
+                resultado.add(converterRecord(record));
             }
         }
 
         return resultado;
     }
 
-    @Override
-    public void deletarSensorData(String esp32Id) {
-        if (esp32Id == null || esp32Id.isEmpty()) {
-            throw new IllegalArgumentException("sensorId não pode ser nulo ou vazio");
+    private AmbienteData converterRecord(FluxRecord record) {
+
+        AmbienteData data = new AmbienteData();
+
+        data.setTime(record.getTime());
+
+        Object value = record.getValueByKey("_value");
+
+        if (value instanceof Number number) {
+            data.setValor(number.floatValue());
         }
 
-        DeleteApi deleteApi = influxDBClient.getDeleteApi();
+        data.setCurralId(toLong(record.getValueByKey("curral_id")));
+        data.setEsp32Id(toLong(record.getValueByKey("esp32_id")));
+        data.setFazendaId(toLong(record.getValueByKey("fazenda_id")));
+        data.setSensorId(toLong(record.getValueByKey("sensor_id")));
+        data.setVariavelId(toLong(record.getValueByKey("variavel_id")));
 
-        try {
-            OffsetDateTime start = OffsetDateTime.parse("1970-01-01T00:00:00Z");  // Data muito antiga
-            OffsetDateTime stop = OffsetDateTime.now();  // Data atual
-
-            String predicate = "_measurement=\"sensor\" AND sensor_id = \"" + esp32Id + "\"";
-
-            deleteApi.delete(start, stop, predicate, bucket, org);
-
-            System.out.println("Dados do sensor " + esp32Id + " deletados com sucesso.");
-
-        } catch (Exception e) {
-
-            System.err.println("Erro ao deletar dados do sensor: " + e.getMessage());
-        }
+        return data;
     }
 
     private Long toLong(Object value) {
-        if (value == null) return null;
+
+        if (value == null) {
+            return null;
+        }
+
         return Long.parseLong(value.toString());
     }
-
 }
-
