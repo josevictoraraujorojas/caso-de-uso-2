@@ -6,36 +6,110 @@ import org.example.casodeuso2.model.LimiteAmbiental;
 import org.example.casodeuso2.repository.LimiteAmbientalRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 @Service
 public class LimiteAmbientalService {
+
     private final LimiteAmbientalRepository repository;
 
     @Autowired
-    public LimiteAmbientalService(LimiteAmbientalRepository repository) {
+    public LimiteAmbientalService(
+            LimiteAmbientalRepository repository) {
+
         this.repository = repository;
     }
 
-    // salvar
-    public LimiteAmbientalResponseDTO salvar(LimiteAmbientalCreateDTO limiteAmbientalCreateDTO) {
-        return DataMapper.parseObject(repository.save(DataMapper.parseObject(limiteAmbientalCreateDTO,LimiteAmbiental.class)),LimiteAmbientalResponseDTO.class);
+    // SALVAR
+    public LimiteAmbientalResponseDTO salvar(
+            LimiteAmbientalCreateDTO dto) {
+
+        if (dto == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados do limite ambiental inválidos"
+            );
+        }
+
+        LimiteAmbiental limiteAmbiental =
+                DataMapper.parseObject(dto, LimiteAmbiental.class);
+
+        return DataMapper.parseObject(
+                repository.save(limiteAmbiental),
+                LimiteAmbientalResponseDTO.class
+        );
     }
 
-    // listar todos
+    // EDITAR
+    public LimiteAmbientalResponseDTO editar(
+            Long limiteAmbientalId,
+            LimiteAmbientalCreateDTO dto) {
+
+        LimiteAmbiental limiteAmbiental =
+                repository.findById(limiteAmbientalId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Limite ambiental não encontrado"
+                        ));
+
+        limiteAmbiental.setValorMax(dto.getValorMax());
+        limiteAmbiental.setValorMin(dto.getValorMin());
+
+        return DataMapper.parseObject(
+                repository.save(limiteAmbiental),
+                LimiteAmbientalResponseDTO.class
+        );
+    }
+
+    // LISTAR TODOS
     public List<LimiteAmbientalResponseDTO> listar() {
-        return DataMapper.parseListObjects(repository.findAll(), LimiteAmbientalResponseDTO.class);
+
+        List<LimiteAmbiental> limites =
+                repository.findAll();
+
+        if (limites.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nenhum limite ambiental encontrado"
+            );
+        }
+
+        return DataMapper.parseListObjects(
+                limites,
+                LimiteAmbientalResponseDTO.class
+        );
     }
 
-    // buscar por id
+    // BUSCAR POR ID
     public LimiteAmbientalResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Limite ambiental não encontrado")),LimiteAmbientalResponseDTO.class);
+
+        LimiteAmbiental limiteAmbiental =
+                repository.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Limite ambiental não encontrado"
+                        ));
+
+        return DataMapper.parseObject(
+                limiteAmbiental,
+                LimiteAmbientalResponseDTO.class
+        );
     }
 
-    // deletar
+    // DELETAR
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        LimiteAmbiental limiteAmbiental =
+                repository.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Limite ambiental não encontrado"
+                        ));
+
+        repository.delete(limiteAmbiental);
     }
 }
