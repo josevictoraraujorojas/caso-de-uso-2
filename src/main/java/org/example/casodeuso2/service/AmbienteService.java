@@ -2,6 +2,7 @@ package org.example.casodeuso2.service;
 
 import org.example.casodeuso2.model.AmbienteData;
 import org.example.casodeuso2.repository.AmbienteRepository;
+import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,22 @@ public class AmbienteService {
     @Autowired
     public AmbienteService(AmbienteRepository ambienteRepository) {
         this.ambienteRepository = ambienteRepository;
+    }
+
+    // SALVAR
+    public void salvarSensorData(AmbienteData data) {
+
+        if (data == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados do sensor inválidos"
+            );
+        }
+
+        AmbienteData sensorData =
+                DataMapper.parseObject(data, AmbienteData.class);
+
+        ambienteRepository.salvarSensorData(sensorData);
     }
 
     // CONSULTAR TODOS
