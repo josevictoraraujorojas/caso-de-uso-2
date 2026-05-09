@@ -63,10 +63,6 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
     @Override
     public void deletarSensorData(String esp32Id) {
 
-        if (esp32Id == null || esp32Id.isBlank()) {
-            throw new IllegalArgumentException("esp32Id não pode ser vazio");
-        }
-
         try {
 
             OffsetDateTime start = OffsetDateTime.parse("1970-01-01T00:00:00Z");
