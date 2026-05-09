@@ -8,81 +8,189 @@ import org.example.casodeuso2.repository.CurralRepository;
 import org.example.casodeuso2.repository.FazendaRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class FazendaService {
+
     private final FazendaRepository repository;
     private final CurralRepository curralRepository;
 
     @Autowired
-    public FazendaService(FazendaRepository repository, CurralRepository curralRepository) {
+    public FazendaService(
+            FazendaRepository repository,
+            CurralRepository curralRepository) {
+
         this.repository = repository;
         this.curralRepository = curralRepository;
     }
 
-    // salvar
-    public FazendaResponseDTO salvar(FazendaCreateDTO fazendaCreateDTO) {
-        return DataMapper.parseObject(repository.save(DataMapper.parseObject(fazendaCreateDTO, Fazenda.class)),FazendaResponseDTO.class);
+    // SALVAR
+    public FazendaResponseDTO salvar(
+            FazendaCreateDTO dto) {
+
+        if (dto == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados da fazenda inválidos"
+            );
+        }
+
+        Fazenda fazenda =
+                DataMapper.parseObject(dto, Fazenda.class);
+
+        return DataMapper.parseObject(
+                repository.save(fazenda),
+                FazendaResponseDTO.class
+        );
     }
 
-    public FazendaResponseDTO adicionarCurral(Long fazendaId, Long curralId){
+    // EDITAR
+    public FazendaResponseDTO editar(
+            Long fazendaId,
+            FazendaCreateDTO dto) {
+
         Fazenda fazenda = repository.findById(fazendaId)
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Fazenda não encontrada"
+                ));
+
+        fazenda.setNome(dto.getNome());
+        fazenda.setEndereco(dto.getEndereco());
+
+        return DataMapper.parseObject(
+                repository.save(fazenda),
+                FazendaResponseDTO.class
+        );
+    }
+
+    // ADICIONAR CURRAL
+    public FazendaResponseDTO adicionarCurral(
+            Long fazendaId,
+            Long curralId) {
+
+        Fazenda fazenda = repository.findById(fazendaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Fazenda não encontrada"
+                ));
 
         Curral curral = curralRepository.findById(curralId)
-                .orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
 
-        if (fazenda.getCurrais() == null){
+        if (fazenda.getCurrais() == null) {
             fazenda.setCurrais(new HashSet<>());
         }
 
         if (fazenda.getCurrais().contains(curral)) {
-            throw new RuntimeException("Esse curral já está vinculado a essa fazenda");
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse curral já está vinculado a essa fazenda"
+            );
         }
 
         fazenda.getCurrais().add(curral);
 
-
-        return DataMapper.parseObject(repository.save(fazenda), FazendaResponseDTO.class);
+        return DataMapper.parseObject(
+                repository.save(fazenda),
+                FazendaResponseDTO.class
+        );
     }
 
-    // listar todos
+    // LISTAR TODOS
     public List<FazendaResponseDTO> listar() {
-        return DataMapper.parseListObjects(repository.findAll(), FazendaResponseDTO.class);
+
+        List<Fazenda> fazendas = repository.findAll();
+
+        if (fazendas.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nenhuma fazenda encontrada"
+            );
+        }
+
+        return DataMapper.parseListObjects(
+                fazendas,
+                FazendaResponseDTO.class
+        );
     }
 
-    // buscar por id
+    // BUSCAR POR ID
     public FazendaResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Fazenda não encontrado")), FazendaResponseDTO.class);
+
+        Fazenda fazenda = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Fazenda não encontrada"
+                ));
+
+        return DataMapper.parseObject(
+                fazenda,
+                FazendaResponseDTO.class
+        );
     }
 
-    // deletar
+    // DELETAR
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        Fazenda fazenda = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Fazenda não encontrada"
+                ));
+
+        repository.delete(fazenda);
     }
 
-    public FazendaResponseDTO removerCurral(Long fazendaId, Long curralId){
+    // REMOVER CURRAL
+    public FazendaResponseDTO removerCurral(
+            Long fazendaId,
+            Long curralId) {
+
         Fazenda fazenda = repository.findById(fazendaId)
-                .orElseThrow(() -> new RuntimeException("Fazenda não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Fazenda não encontrada"
+                ));
 
         Curral curral = curralRepository.findById(curralId)
-                .orElseThrow(() -> new RuntimeException("Curral não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Curral não encontrado"
+                ));
 
-        if (fazenda.getCurrais() == null){
-            throw new RuntimeException("Essa fazenda não possui currais");
+        if (fazenda.getCurrais() == null ||
+                fazenda.getCurrais().isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Essa fazenda não possui currais"
+            );
         }
 
         if (!fazenda.getCurrais().contains(curral)) {
-            throw new RuntimeException("Esse curral não está vinculado a essa fazenda");
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse curral não está vinculado a essa fazenda"
+            );
         }
 
         fazenda.getCurrais().remove(curral);
 
-
-        return DataMapper.parseObject(repository.save(fazenda), FazendaResponseDTO.class);
+        return DataMapper.parseObject(
+                repository.save(fazenda),
+                FazendaResponseDTO.class
+        );
     }
 }

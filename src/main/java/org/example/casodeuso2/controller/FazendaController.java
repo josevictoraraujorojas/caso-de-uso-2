@@ -4,6 +4,8 @@ import org.example.casodeuso2.dto.FazendaCreateDTO;
 import org.example.casodeuso2.dto.FazendaResponseDTO;
 import org.example.casodeuso2.service.FazendaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/fazenda")
 public class FazendaController {
+
     private final FazendaService service;
 
     @Autowired
@@ -20,36 +23,78 @@ public class FazendaController {
 
     // POST
     @PostMapping
-    public FazendaResponseDTO criar(@RequestBody FazendaCreateDTO fazendaCreateDTO) {
-        return service.salvar(fazendaCreateDTO);
+    public ResponseEntity<FazendaResponseDTO> criar(
+            @RequestBody FazendaCreateDTO dto) {
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.salvar(dto));
     }
 
-    //PUT
+    // PUT - EDITAR
+    @PutMapping("/{id}")
+    public ResponseEntity<FazendaResponseDTO> editar(
+            @PathVariable Long id,
+            @RequestBody FazendaCreateDTO dto) {
+
+        return ResponseEntity.ok(
+                service.editar(id, dto)
+        );
+    }
+
+    // PUT - ADICIONAR CURRAL
     @PutMapping("/{fazendaId}/curral/{curralId}")
-    public FazendaResponseDTO adicionarCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
-        return service.adicionarCurral(fazendaId, curralId);
+    public ResponseEntity<FazendaResponseDTO> adicionarCurral(
+            @PathVariable Long fazendaId,
+            @PathVariable Long curralId) {
+
+        return ResponseEntity.ok(
+                service.adicionarCurral(
+                        fazendaId,
+                        curralId
+                )
+        );
     }
 
-    // GET todos
+    // GET TODOS
     @GetMapping
-    public List<FazendaResponseDTO> listar() {
-        return service.listar();
+    public ResponseEntity<List<FazendaResponseDTO>> listar() {
+
+        return ResponseEntity.ok(
+                service.listar()
+        );
     }
 
-    // GET por ID
+    // GET POR ID
     @GetMapping("/{id}")
-    public FazendaResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public ResponseEntity<FazendaResponseDTO> buscarPorId(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                service.buscarPorId(id)
+        );
     }
 
     // DELETE
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(
+            @PathVariable Long id) {
+
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 
+    // DELETE - REMOVER CURRAL
     @DeleteMapping("/{fazendaId}/curral/{curralId}")
-    public FazendaResponseDTO removerCurral(@PathVariable Long fazendaId, @PathVariable Long curralId) {
-        return service.removerCurral(fazendaId, curralId);
+    public ResponseEntity<FazendaResponseDTO> removerCurral(
+            @PathVariable Long fazendaId,
+            @PathVariable Long curralId) {
+
+        return ResponseEntity.ok(
+                service.removerCurral(
+                        fazendaId,
+                        curralId
+                )
+        );
     }
 }
