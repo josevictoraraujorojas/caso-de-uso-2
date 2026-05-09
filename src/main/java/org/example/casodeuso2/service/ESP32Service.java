@@ -7,9 +7,9 @@ import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.SensorRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.util.HashSet;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
@@ -19,80 +19,156 @@ public class ESP32Service {
     private final SensorRepository sensorRepository;
 
     @Autowired
-    public ESP32Service(ESP32Repository repository, SensorRepository sensorRepository) {
+    public ESP32Service(
+            ESP32Repository repository,
+            SensorRepository sensorRepository) {
+
         this.repository = repository;
         this.sensorRepository = sensorRepository;
     }
 
-    // salvar
-    public ESP32 salvarOuAtualizar(ESP32 esp32) {
-        ESP32 existente = repository.findByMacAddress(esp32.getMacAddress());
+    // SALVAR OU ATUALIZAR
+    public void salvarOuAtualizar(ESP32 esp32) {
+
+        if (esp32 == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados do ESP32 inválidos"
+            );
+        }
+
+        ESP32 existente =
+                repository.findByMacAddress(esp32.getMacAddress());
 
         if (existente != null) {
+
             existente.setIp(esp32.getIp());
             existente.setNome(esp32.getNome());
 
-            return repository.save(existente);
+            repository.save(existente);
+            return;
         }
 
-        return repository.save(esp32);
+        repository.save(esp32);
     }
 
-    public ESP32ResponseDTO adicionarSensor(Long esp32Id, Long sensorId) {
-        ESP32 esp32 = repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("Esp32 não encontrado"));
-        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
-
-        if (esp32.getSensores()==null){
-            esp32.setSensores(new HashSet<>());
-        }
-        if (esp32.getSensores().contains(sensor)){
-            throw new RuntimeException("Esse sensor já esta vinculado a este esp32");
-        }
-        esp32.getSensores().add(sensor);
-        return DataMapper.parseObject(repository.save(esp32), ESP32ResponseDTO.class);
-    }
-
-    // listar todos
+    // LISTAR TODOS
     public List<ESP32ResponseDTO> listar() {
-        return DataMapper.parseListObjects(repository.findAll(), ESP32ResponseDTO.class);
+
+        List<ESP32> esp32s = repository.findAll();
+
+        if (esp32s.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nenhum ESP32 encontrado"
+            );
+        }
+
+        return DataMapper.parseListObjects(
+                esp32s,
+                ESP32ResponseDTO.class
+        );
     }
 
-    // buscar por id
+    // BUSCAR POR ID
     public ESP32ResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado")), ESP32ResponseDTO.class);
+
+        ESP32 esp32 = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        return DataMapper.parseObject(
+                esp32,
+                ESP32ResponseDTO.class
+        );
     }
 
+    // BUSCAR POR MAC
     public ESP32 buscarPorMac(String mac) {
+
         ESP32 esp32 = repository.findByMacAddress(mac);
 
         if (esp32 == null) {
-            throw new RuntimeException("Esp32 nao encontrado");
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "ESP32 não encontrado"
+            );
         }
 
         return esp32;
     }
 
-    // buscar por nome
+    // BUSCAR POR NOME
     public ESP32ResponseDTO buscarPorNome(String nome) {
-        return DataMapper.parseObject(repository.findByNome(nome),ESP32ResponseDTO.class);
+
+        ESP32 esp32 = repository.findByNome(nome);
+
+        if (esp32 == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "ESP32 não encontrado"
+            );
+        }
+
+        return DataMapper.parseObject(
+                esp32,
+                ESP32ResponseDTO.class
+        );
     }
 
-    // deletar
+    // DELETAR
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        ESP32 esp32 = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        repository.delete(esp32);
     }
 
-    public ESP32ResponseDTO removerSensor(Long esp32Id, Long sensorId) {
-        ESP32 esp32 = repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("Esp32 não encontrado"));
-        Sensor sensor = sensorRepository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+    // REMOVER SENSOR
+    public ESP32ResponseDTO removerSensor(
+            Long esp32Id,
+            Long sensorId) {
 
-        if (esp32.getSensores()==null){
-            throw new RuntimeException("Esse esp32 não possui sensores");
+        ESP32 esp32 = repository.findById(esp32Id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        Sensor sensor = sensorRepository.findById(sensorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        if (esp32.getSensores() == null ||
+                esp32.getSensores().isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse ESP32 não possui sensores"
+            );
         }
-        if (!esp32.getSensores().contains(sensor)){
-            throw new RuntimeException("Esse sensor não está vinculado a esse esp32");
+
+        if (!esp32.getSensores().contains(sensor)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse sensor não está vinculado a esse ESP32"
+            );
         }
+
         esp32.getSensores().remove(sensor);
-        return DataMapper.parseObject(repository.save(esp32), ESP32ResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(esp32),
+                ESP32ResponseDTO.class
+        );
     }
 }
