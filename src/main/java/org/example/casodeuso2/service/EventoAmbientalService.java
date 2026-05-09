@@ -10,102 +10,261 @@ import org.example.casodeuso2.repository.ESP32Repository;
 import org.example.casodeuso2.repository.EventoAmbientalRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Objects;
 
 @Service
 public class EventoAmbientalService {
+
     private final EventoAmbientalRepository repository;
     private final CurralRepository curralRepository;
     private final ESP32Repository esp32Repository;
 
     @Autowired
-    public EventoAmbientalService(EventoAmbientalRepository repository, CurralRepository curralRepository, ESP32Repository esp32Repository) {
+    public EventoAmbientalService(
+            EventoAmbientalRepository repository,
+            CurralRepository curralRepository,
+            ESP32Repository esp32Repository) {
+
         this.repository = repository;
         this.curralRepository = curralRepository;
         this.esp32Repository = esp32Repository;
     }
 
-    // salvar
-    public EventoAmbientalResponseDTO salvar(EventoAmbientalCreateDTO eventoAmbientalCreateDTO) {
-        return DataMapper.parseObject(repository.save(DataMapper.parseObject(eventoAmbientalCreateDTO,EventoAmbiental.class)),EventoAmbientalResponseDTO.class);
+    // SALVAR
+    public EventoAmbientalResponseDTO salvar(
+            EventoAmbientalCreateDTO dto) {
+
+        if (dto == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados do evento ambiental inválidos"
+            );
+        }
+
+        EventoAmbiental evento =
+                DataMapper.parseObject(dto, EventoAmbiental.class);
+
+        return DataMapper.parseObject(
+                repository.save(evento),
+                EventoAmbientalResponseDTO.class
+        );
     }
 
+    // ADICIONAR ESP32
+    public EventoAmbientalResponseDTO adicionarEsp32(
+            Long eventoAmbientalId,
+            Long esp32Id) {
 
-    public EventoAmbientalResponseDTO adicionarEsp32(Long eventoAmbientalId, Long esp32Id){
-        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
-        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+        EventoAmbiental eventoAmbiental =
+                repository.findById(eventoAmbientalId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
 
-        if (eventoAmbiental.getEsp32()==null){
-            eventoAmbiental.setEsp32(esp32);
-            return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
+        ESP32 esp32 =
+                esp32Repository.findById(esp32Id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "ESP32 não encontrado"
+                        ));
+
+        if (eventoAmbiental.getEsp32() != null &&
+                Objects.equals(
+                        eventoAmbiental.getEsp32().getId(),
+                        esp32.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse ESP32 já está vinculado a este evento ambiental"
+            );
         }
-        if (Objects.equals(eventoAmbiental.getEsp32().getId(), esp32.getId())) {
-            throw new RuntimeException("Esse esp32 já esta vinculado a este Evento Ambiental");
-        }
+
         eventoAmbiental.setEsp32(esp32);
-        return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(eventoAmbiental),
+                EventoAmbientalResponseDTO.class
+        );
     }
 
-    public EventoAmbientalResponseDTO adicionarCurral(Long eventoAmbientalId, Long curralId){
-        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
-        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrado"));
+    // ADICIONAR CURRAL
+    public EventoAmbientalResponseDTO adicionarCurral(
+            Long eventoAmbientalId,
+            Long curralId) {
 
-        if (eventoAmbiental.getCurral()==null){
-            eventoAmbiental.setCurral(curral);
-            return DataMapper.parseObject(repository.save(eventoAmbiental),EventoAmbientalResponseDTO.class);
+        EventoAmbiental eventoAmbiental =
+                repository.findById(eventoAmbientalId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
+
+        Curral curral =
+                curralRepository.findById(curralId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Curral não encontrado"
+                        ));
+
+        if (eventoAmbiental.getCurral() != null &&
+                Objects.equals(
+                        eventoAmbiental.getCurral().getId(),
+                        curral.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse curral já está vinculado a este evento ambiental"
+            );
         }
 
-        if (Objects.equals(eventoAmbiental.getCurral().getId(), curral.getId())) {
-            throw new RuntimeException("Esse curral já esta vinculado a este Evento Ambiental");
-        }
         eventoAmbiental.setCurral(curral);
-        return DataMapper.parseObject(repository.save(eventoAmbiental),EventoAmbientalResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(eventoAmbiental),
+                EventoAmbientalResponseDTO.class
+        );
     }
 
-    // listar todos
+    // LISTAR TODOS
     public List<EventoAmbientalResponseDTO> listar() {
-        return DataMapper.parseListObjects(repository.findAll(), EventoAmbientalResponseDTO.class);
+
+        List<EventoAmbiental> eventos = repository.findAll();
+
+        if (eventos.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nenhum evento ambiental encontrado"
+            );
+        }
+
+        return DataMapper.parseListObjects(
+                eventos,
+                EventoAmbientalResponseDTO.class
+        );
     }
 
-    // buscar por id
+    // BUSCAR POR ID
     public EventoAmbientalResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Evento ambiental não encontrado")), EventoAmbientalResponseDTO.class);
+
+        EventoAmbiental evento =
+                repository.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
+
+        return DataMapper.parseObject(
+                evento,
+                EventoAmbientalResponseDTO.class
+        );
     }
 
-    // deletar
+    // DELETAR
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        EventoAmbiental evento =
+                repository.findById(id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
+
+        repository.delete(evento);
     }
 
-    public EventoAmbientalResponseDTO removerEsp32(Long eventoAmbientalId, Long esp32Id){
-        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
-        ESP32 esp32 = esp32Repository.findById(esp32Id).orElseThrow(() -> new RuntimeException("ESP32 não encontrado"));
+    // REMOVER ESP32
+    public EventoAmbientalResponseDTO removerEsp32(
+            Long eventoAmbientalId,
+            Long esp32Id) {
 
-        if (eventoAmbiental.getEsp32()==null){
-            throw new RuntimeException("Esse Evento ambiental não possui esp32");
+        EventoAmbiental eventoAmbiental =
+                repository.findById(eventoAmbientalId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
+
+        ESP32 esp32 =
+                esp32Repository.findById(esp32Id)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "ESP32 não encontrado"
+                        ));
+
+        if (eventoAmbiental.getEsp32() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse evento ambiental não possui ESP32"
+            );
         }
-        if (!Objects.equals(eventoAmbiental.getEsp32().getId(), esp32.getId())) {
-            throw new RuntimeException("Esse esp32 não esta vinculado a este Evento Ambiental");
+
+        if (!Objects.equals(
+                eventoAmbiental.getEsp32().getId(),
+                esp32.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse ESP32 não está vinculado a este evento ambiental"
+            );
         }
+
         eventoAmbiental.setEsp32(null);
-        return DataMapper.parseObject(repository.save(eventoAmbiental), EventoAmbientalResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(eventoAmbiental),
+                EventoAmbientalResponseDTO.class
+        );
     }
 
-    public EventoAmbientalResponseDTO removerCurral(Long eventoAmbientalId, Long curralId){
-        EventoAmbiental eventoAmbiental = repository.findById(eventoAmbientalId).orElseThrow(() -> new RuntimeException("Evento Ambiental não encontrado"));
-        Curral curral = curralRepository.findById(curralId).orElseThrow(() -> new RuntimeException("Curral não encontrado"));
+    // REMOVER CURRAL
+    public EventoAmbientalResponseDTO removerCurral(
+            Long eventoAmbientalId,
+            Long curralId) {
 
-        if (eventoAmbiental.getCurral()==null){
-            throw new RuntimeException("Esse Evento ambiental não possui curral");
+        EventoAmbiental eventoAmbiental =
+                repository.findById(eventoAmbientalId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Evento ambiental não encontrado"
+                        ));
+
+        Curral curral =
+                curralRepository.findById(curralId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Curral não encontrado"
+                        ));
+
+        if (eventoAmbiental.getCurral() == null) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse evento ambiental não possui curral"
+            );
         }
 
-        if (!Objects.equals(eventoAmbiental.getCurral().getId(), curral.getId())) {
-            throw new RuntimeException("Esse curral não esta vinculado a este Evento Ambiental");
+        if (!Objects.equals(
+                eventoAmbiental.getCurral().getId(),
+                curral.getId())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Esse curral não está vinculado a este evento ambiental"
+            );
         }
+
         eventoAmbiental.setCurral(null);
-        return DataMapper.parseObject(repository.save(eventoAmbiental),EventoAmbientalResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(eventoAmbiental),
+                EventoAmbientalResponseDTO.class
+        );
     }
 }
