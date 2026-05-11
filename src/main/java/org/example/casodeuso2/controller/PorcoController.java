@@ -4,6 +4,8 @@ import org.example.casodeuso2.dto.PorcoCreateDTO;
 import org.example.casodeuso2.dto.PorcoResponseDTO;
 import org.example.casodeuso2.service.PorcoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,25 +22,33 @@ public class PorcoController {
 
     // POST
     @PostMapping
-    public PorcoResponseDTO criar(@RequestBody PorcoCreateDTO porcoCreateDTO) {
-        return service.salvar(porcoCreateDTO);
+    public ResponseEntity<PorcoResponseDTO> criar(@RequestBody PorcoCreateDTO porcoCreateDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(porcoCreateDTO));
+    }
+
+    // Put
+    @PutMapping("/{id}")
+    public ResponseEntity<PorcoResponseDTO> editar(@PathVariable Long id,@RequestBody PorcoCreateDTO porcoCreateDTO) {
+        return ResponseEntity.ok(service.editar(id,porcoCreateDTO));
     }
 
     // GET todos
     @GetMapping
-    public List<PorcoResponseDTO> listar() {
-        return service.listar();
+    public ResponseEntity<List<PorcoResponseDTO>> listar() {
+        return ResponseEntity.ok(service.listar());
     }
 
     // GET por ID
     @GetMapping("/{id}")
-    public PorcoResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public ResponseEntity<PorcoResponseDTO> buscarPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(service.buscarPorId(id));
     }
 
     // DELETE
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
+
+        return ResponseEntity.noContent().build();
     }
 }
