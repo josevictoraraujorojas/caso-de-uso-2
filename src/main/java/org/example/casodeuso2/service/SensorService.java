@@ -8,67 +8,194 @@ import org.example.casodeuso2.repository.SensorRepository;
 import org.example.casodeuso2.repository.VariavelAmbienteRepository;
 import org.example.casodeuso2.util.DataMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
 
 @Service
 public class SensorService {
+
     private final SensorRepository repository;
     private final VariavelAmbienteRepository variavelAmbienteRepository;
 
     @Autowired
-    public SensorService(SensorRepository repository, VariavelAmbienteRepository variavelAmbienteRepository) {
+    public SensorService(
+            SensorRepository repository,
+            VariavelAmbienteRepository variavelAmbienteRepository) {
+
         this.repository = repository;
         this.variavelAmbienteRepository = variavelAmbienteRepository;
     }
 
-    // salvar
-    public SensorResponseDTO salvar(SensorCreateDto sensorCreateDto) {
-        return DataMapper.parseObject(repository.save(DataMapper.parseObject(sensorCreateDto,Sensor.class)),SensorResponseDTO.class);
+    // SALVAR
+    public SensorResponseDTO salvar(
+            SensorCreateDto sensorCreateDto) {
+
+        if (sensorCreateDto == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Dados do sensor inválidos"
+            );
+        }
+
+        Sensor sensor = DataMapper.parseObject(
+                sensorCreateDto,
+                Sensor.class
+        );
+
+        return DataMapper.parseObject(
+                repository.save(sensor),
+                SensorResponseDTO.class
+        );
     }
 
-    public SensorResponseDTO adicionarVariavelAmbiente(Long sensorId,Long variavelAmbienteId) {
-        Sensor sensor = repository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
-        VariavelAmbiente variavelAmbiente = variavelAmbienteRepository.findById(variavelAmbienteId).orElseThrow(() -> new RuntimeException("Variavel de ambiente não encontrado"));
+    // EDITAR
+    public SensorResponseDTO editar(
+            Long sensorId,
+            SensorCreateDto sensorCreateDto) {
 
-        if (sensor.getVariaveisAmbientes()==null){
+        Sensor sensor = repository.findById(sensorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        sensor.setTipo(sensorCreateDto.getTipo());
+        sensor.setModelo(sensorCreateDto.getModelo());
+        sensor.setModelo(sensorCreateDto.getModelo());
+
+        return DataMapper.parseObject(
+                repository.save(sensor),
+                SensorResponseDTO.class
+        );
+    }
+
+    // ADICIONAR VARIAVEL AMBIENTE
+    public SensorResponseDTO adicionarVariavelAmbiente(
+            Long sensorId,
+            Long variavelAmbienteId) {
+
+        Sensor sensor = repository.findById(sensorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        VariavelAmbiente variavelAmbiente =
+                variavelAmbienteRepository.findById(variavelAmbienteId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Variável de ambiente não encontrada"
+                        ));
+
+        if (sensor.getVariaveisAmbientes() == null) {
             sensor.setVariaveisAmbientes(new HashSet<>());
         }
-        if (sensor.getVariaveisAmbientes().contains(variavelAmbiente)){
-            throw new RuntimeException("Essa Variavel de Ambiente já esta vinculada com este Sensor");
+
+        if (sensor.getVariaveisAmbientes().contains(variavelAmbiente)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Essa variável de ambiente já está vinculada a este sensor"
+            );
         }
+
         sensor.getVariaveisAmbientes().add(variavelAmbiente);
-        return DataMapper.parseObject(repository.save(sensor),SensorResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(sensor),
+                SensorResponseDTO.class
+        );
     }
 
-    // listar todos
+    // LISTAR TODOS
     public List<SensorResponseDTO> listar() {
-        return DataMapper.parseListObjects(repository.findAll(),SensorResponseDTO.class);
+
+        List<Sensor> sensores = repository.findAll();
+
+        if (sensores.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Nenhum sensor encontrado"
+            );
+        }
+
+        return DataMapper.parseListObjects(
+                sensores,
+                SensorResponseDTO.class
+        );
     }
 
-    // buscar por id
+    // BUSCAR POR ID
     public SensorResponseDTO buscarPorId(Long id) {
-        return DataMapper.parseObject(repository.findById(id).orElseThrow(() -> new RuntimeException("Sensor não encontrado")),SensorResponseDTO.class);
+
+        Sensor sensor = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        return DataMapper.parseObject(
+                sensor,
+                SensorResponseDTO.class
+        );
     }
 
-    // deletar
+    // DELETAR
     public void deletar(Long id) {
-        repository.deleteById(id);
+
+        Sensor sensor = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        repository.delete(sensor);
     }
 
-    public SensorResponseDTO removerVariavelAmbiente(Long sensorId,Long variavelAmbienteId) {
-        Sensor sensor = repository.findById(sensorId).orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
-        VariavelAmbiente variavelAmbiente = variavelAmbienteRepository.findById(variavelAmbienteId).orElseThrow(() -> new RuntimeException("Variavel de ambiente não encontrado"));
+    // REMOVER VARIAVEL AMBIENTE
+    public SensorResponseDTO removerVariavelAmbiente(
+            Long sensorId,
+            Long variavelAmbienteId) {
 
-        if (sensor.getVariaveisAmbientes()==null){
-            throw new RuntimeException("Esse Sensor ambiental não possui Variavel de ambiente");
+        Sensor sensor = repository.findById(sensorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        VariavelAmbiente variavelAmbiente =
+                variavelAmbienteRepository.findById(variavelAmbienteId)
+                        .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
+                                "Variável de ambiente não encontrada"
+                        ));
+
+        if (sensor.getVariaveisAmbientes() == null ||
+                sensor.getVariaveisAmbientes().isEmpty()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Esse sensor não possui variáveis de ambiente"
+            );
         }
-        if (!sensor.getVariaveisAmbientes().contains(variavelAmbiente)){
-            throw new RuntimeException("Essa Variavel de Ambiente não esta vinculada com este Sensor");
+
+        if (!sensor.getVariaveisAmbientes().contains(variavelAmbiente)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Essa variável de ambiente não está vinculada a este sensor"
+            );
         }
+
         sensor.getVariaveisAmbientes().remove(variavelAmbiente);
-        return DataMapper.parseObject(repository.save(sensor),SensorResponseDTO.class);
+
+        return DataMapper.parseObject(
+                repository.save(sensor),
+                SensorResponseDTO.class
+        );
     }
 }
