@@ -6,14 +6,14 @@ import java.util.List;
 
 public interface AmbienteRepository {
 
-    public void salvarSensorData(AmbienteData data);
+     void salvarSensorData(AmbienteData data);
 
-    public List<AmbienteData> consultarSensoresData();
+     List<AmbienteData> consultarSensoresData();
 
-    public List<AmbienteData> consultarPorEsp32(Long esp32Id);
+     List<AmbienteData> consultarPorEsp32(Long esp32Id);
 
-    public List<AmbienteData> consultarPorVariavel(Long variavelId);
+     List<AmbienteData> consultarPorVariavel(Long variavelId);
 
-    public void deletarSensorData(String esp32Id);
+     void deletarSensorData(String esp32Id);
 
 }

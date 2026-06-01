@@ -43,36 +43,30 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
 
     @Override
     public List<AmbienteData> consultarSensoresData() {
-        return executarConsulta("");
+        return executarConsulta(null, null);
     }
 
     @Override
     public List<AmbienteData> consultarPorEsp32(Long esp32Id) {
-        return executarConsulta(
-                "|> filter(fn: (r) => r.esp32_id == \"" + esp32Id + "\") "
-        );
+        return executarConsulta("esp32_id", esp32Id);
     }
 
     @Override
     public List<AmbienteData> consultarPorVariavel(Long variavelId) {
-        return executarConsulta(
-                "|> filter(fn: (r) => r.variavel_id == \"" + variavelId + "\") "
-        );
+        return executarConsulta("variavel_id", variavelId);
     }
 
     @Override
     public void deletarSensorData(String esp32Id) {
-
         try {
-
             OffsetDateTime start = OffsetDateTime.parse("1970-01-01T00:00:00Z");
             OffsetDateTime stop = OffsetDateTime.now();
 
-            String predicate =
-                    "_measurement=\"" + MEASUREMENT + "\" AND esp32_id=\"" + esp32Id + "\"";
+            String predicate = """
+                    _measurement="%s" AND esp32_id="%s"
+                    """.formatted(MEASUREMENT, esp32Id);
 
             DeleteApi deleteApi = influxDBClient.getDeleteApi();
-
             deleteApi.delete(start, stop, predicate, bucket, org);
 
             System.out.println("Dados deletados com sucesso.");
@@ -82,7 +76,9 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
         }
     }
 
-    private List<AmbienteData> executarConsulta(String filtro) {
+    private List<AmbienteData> executarConsulta(String campo, Object valor) {
+
+        String filtro = montarFiltro(campo, valor);
 
         String flux = """
                 from(bucket: "%s")
@@ -93,7 +89,6 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
                 """.formatted(bucket, MEASUREMENT, filtro);
 
         QueryApi queryApi = influxDBClient.getQueryApi();
-
         List<FluxTable> tables = queryApi.query(flux, org);
 
         List<AmbienteData> resultado = new ArrayList<>();
@@ -105,6 +100,17 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
         }
 
         return resultado;
+    }
+
+    private String montarFiltro(String campo, Object valor) {
+        if (campo == null || valor == null) {
+            return "";
+        }
+
+        // campo controlado internamente pelo código
+        return """
+                |> filter(fn: (r) => r["%s"] == "%s")
+                """.formatted(campo, valor);
     }
 
     private AmbienteData converterRecord(FluxRecord record) {
@@ -129,7 +135,6 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
     }
 
     private Long toLong(Object value) {
-
         if (value == null) {
             return null;
         }
