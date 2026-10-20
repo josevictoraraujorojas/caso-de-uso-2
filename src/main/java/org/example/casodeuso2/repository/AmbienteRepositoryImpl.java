@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,20 +42,21 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
     @Override
     public void salvarSensorData(AmbienteData data) {
         data.setTime(Instant.now());
+        Instant instanteRegistrado = data.getTime().truncatedTo(ChronoUnit.MILLIS);
         String experimentoId = MDC.get("experimentoId");
 
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
         log.info("[EXPERIMENTO][INFLUX_INICIO] id={} measurement={} bucket={} instante={} valor={} esp32Id={} sensorId={} variavelId={}",
-                experimentoId, MEASUREMENT, bucket, data.getTime(), data.getValor(),
+                experimentoId, MEASUREMENT, bucket, instanteRegistrado, data.getValor(),
                 data.getEsp32Id(), data.getSensorId(), data.getVariavelId());
         try {
             writeApi.writeMeasurement(WritePrecision.MS, data);
             log.info("[EXPERIMENTO][INFLUX_PERSISTIDO] id={} measurement={} bucket={} instante={} valor={} esp32Id={} sensorId={} variavelId={}",
-                    experimentoId, MEASUREMENT, bucket, data.getTime(), data.getValor(),
+                    experimentoId, MEASUREMENT, bucket, instanteRegistrado, data.getValor(),
                     data.getEsp32Id(), data.getSensorId(), data.getVariavelId());
         } catch (RuntimeException e) {
             log.error("[EXPERIMENTO][INFLUX_FALHA] id={} measurement={} bucket={} instante={}",
-                    experimentoId, MEASUREMENT, bucket, data.getTime(), e);
+                    experimentoId, MEASUREMENT, bucket, instanteRegistrado, e);
             throw e;
         }
     }
