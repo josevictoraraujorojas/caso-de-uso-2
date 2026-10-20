@@ -59,3 +59,14 @@ Registre a estrutura observada e compare-a com a associação esperada entre ESP
 ## 5. Dados experimentais
 
 Em cada repetição, registre as mensagens recebidas no broker, as mensagens recebidas no backend, gravações concluídas, dados encontrados no InfluxDB, associações conferidas no Neo4j e erros. Não infira resultados antes de executar o experimento. O valor calculado pelo MQ-135 é uma estimativa que depende de aquecimento e calibração e não substitui uma referência laboratorial independente.
+
+
+## Salvamento dos logs do backend
+
+Execute a aplicação a partir da raiz deste repositório para mostrar o console e salvar a saída em arquivo:
+
+```powershell
+mvn spring-boot:run 2>&1 | Tee-Object -FilePath experimento-backend.log
+```
+
+O arquivo `experimento-backend.log` será criado na pasta atual. Preserve um arquivo por execução. Os logs indicam as operações processadas pela aplicação; confirme separadamente os registros no InfluxDB e os eventos, entidades ou relacionamentos esperados no Neo4j. O Neo4j não precisa criar um evento para cada mensagem ambiental, pois isso depende das regras do backend.
