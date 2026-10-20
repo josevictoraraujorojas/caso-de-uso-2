@@ -14,13 +14,19 @@ import org.example.casodeuso2.repository.EventoAmbientalRepository;
 import org.example.casodeuso2.service.AmbienteService;
 import org.example.casodeuso2.service.ESP32Service;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import tools.jackson.databind.ObjectMapper;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
 public class MQTTListener {
+
+    private static final Logger log = LoggerFactory.getLogger(MQTTListener.class);
 
     private final MqttClient cliente;
     private final MQTTProperties properties;
@@ -68,20 +74,27 @@ public class MQTTListener {
                 public void messageArrived(String topico, MqttMessage mensagem) {
 
                     String payload = new String(mensagem.getPayload());
+                    String experimentoId = UUID.randomUUID().toString().substring(0, 8);
+                    MDC.put("experimentoId", experimentoId);
 
-                    System.out.println("TOPICO: " + topico);
-                    System.out.println("PAYLOAD: " + payload);
+                    log.info(
+                            "[EXPERIMENTO][MQTT_RECEBIDO] id={} topico={} qos={} retained={} bytes={} payload={}",
+                            experimentoId, topico, mensagem.getQos(), mensagem.isRetained(),
+                            mensagem.getPayload().length, payload
+                    );
 
                     try {
-
                         if (topico.equals("ambientedata")) {
                             processarAmbiente(payload);
                         } else if (topico.equals("esp32")) {
                             processarEsp32(payload);
+                        } else {
+                            log.warn("[EXPERIMENTO][TOPICO_SEM_PROCESSADOR] id={} topico={}", experimentoId, topico);
                         }
-
                     } catch (Exception e) {
-                        System.out.println("Erro: " + e.getMessage());
+                        log.error("[EXPERIMENTO][FALHA_PROCESSAMENTO] id={} topico={} payload={}", experimentoId, topico, payload, e);
+                    } finally {
+                        MDC.remove("experimentoId");
                     }
                 }
 
@@ -109,11 +122,15 @@ public class MQTTListener {
             AmbienteData ambiente = criarAmbienteData(dto, esp32, curral, sensor, variavel);
 
             ambienteService.salvarSensorData(ambiente);
+            log.info("[EXPERIMENTO][PROCESSAMENTO_OK] id={} etapa=ambiente esp32Id={} curralId={} sensorId={} variavelId={} valor={}",
+                    MDC.get("experimentoId"), esp32.getId(), curral.getId(), sensor.getId(),
+                    variavel.getId(), ambiente.getValor());
 
             processarEvento(esp32, curral, variavel, ambiente);
 
         } catch (Exception e) {
-            System.out.println("Erro ao processar ambiente: " + e.getMessage());
+            log.error("[EXPERIMENTO][FALHA_PROCESSAMENTO] id={} etapa=ambiente payload={}",
+                    MDC.get("experimentoId"), payload, e);
         }
     }
 
@@ -223,7 +240,10 @@ public class MQTTListener {
             evento.setNivelRisco(NivelRisco.ALTO);
             evento.setAtivo(true);
 
-            eventoAmbientalRepository.save(evento);
+            EventoAmbiental eventoSalvo = eventoAmbientalRepository.save(evento);
+            log.info("[EXPERIMENTO][NEO4J_EVENTO_PERSISTIDO] id={} eventoId={} esp32Id={} curralId={} tipo={} valor={} ativo={}",
+                    MDC.get("experimentoId"), eventoSalvo.getId(), esp32.getId(), curral.getId(),
+                    tipo, valor, eventoSalvo.isAtivo());
         }
     }
 
@@ -248,5 +268,7 @@ public class MQTTListener {
         esp.setDataInstalacao(new Date());
 
         esp32Service.salvarOuAtualizar(esp);
+        log.info("[EXPERIMENTO][CADASTRO_PROCESSADO] id={} tipo=esp32 mac={}",
+                MDC.get("experimentoId"), esp.getMacAddress());
     }
 }

@@ -10,14 +10,20 @@ import com.influxdb.query.FluxTable;
 import org.example.casodeuso2.model.AmbienteData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class AmbienteRepositoryImpl implements AmbienteRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(AmbienteRepositoryImpl.class);
 
     private static final String MEASUREMENT = "medicoes_ambientais";
 
@@ -36,9 +42,23 @@ public class AmbienteRepositoryImpl implements AmbienteRepository {
     @Override
     public void salvarSensorData(AmbienteData data) {
         data.setTime(Instant.now());
+        Instant instanteRegistrado = data.getTime().truncatedTo(ChronoUnit.MILLIS);
+        String experimentoId = MDC.get("experimentoId");
 
         WriteApiBlocking writeApi = influxDBClient.getWriteApiBlocking();
-        writeApi.writeMeasurement(WritePrecision.MS, data);
+        log.info("[EXPERIMENTO][INFLUX_INICIO] id={} measurement={} bucket={} instante={} valor={} esp32Id={} sensorId={} variavelId={}",
+                experimentoId, MEASUREMENT, bucket, instanteRegistrado, data.getValor(),
+                data.getEsp32Id(), data.getSensorId(), data.getVariavelId());
+        try {
+            writeApi.writeMeasurement(WritePrecision.MS, data);
+            log.info("[EXPERIMENTO][INFLUX_PERSISTIDO] id={} measurement={} bucket={} instante={} valor={} esp32Id={} sensorId={} variavelId={}",
+                    experimentoId, MEASUREMENT, bucket, instanteRegistrado, data.getValor(),
+                    data.getEsp32Id(), data.getSensorId(), data.getVariavelId());
+        } catch (RuntimeException e) {
+            log.error("[EXPERIMENTO][INFLUX_FALHA] id={} measurement={} bucket={} instante={}",
+                    experimentoId, MEASUREMENT, bucket, instanteRegistrado, e);
+            throw e;
+        }
     }
 
     @Override
