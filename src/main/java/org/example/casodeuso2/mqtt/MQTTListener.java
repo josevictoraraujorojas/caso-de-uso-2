@@ -240,7 +240,10 @@ public class MQTTListener {
             evento.setNivelRisco(NivelRisco.ALTO);
             evento.setAtivo(true);
 
-            eventoAmbientalRepository.save(evento);
+            EventoAmbiental eventoSalvo = eventoAmbientalRepository.save(evento);
+            log.info("[EXPERIMENTO][NEO4J_EVENTO_PERSISTIDO] id={} eventoId={} esp32Id={} curralId={} tipo={} valor={} ativo={}",
+                    MDC.get("experimentoId"), eventoSalvo.getId(), esp32.getId(), curral.getId(),
+                    tipo, valor, eventoSalvo.isAtivo());
         }
     }
 
