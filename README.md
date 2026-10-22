@@ -72,3 +72,12 @@ O firmware de aquisição do caso de uso está em [esp-caso-uso-2](https://githu
 - A disponibilidade dos dados depende da conexão entre ESP32, broker MQTT e backend.
 - A qualidade das medições depende dos sensores, da montagem e da calibração.
 - Os detalhes de endpoints, classes, variáveis de ambiente e esquema de persistência devem acompanhar a implementação atual do repositório.
+
+## Documentação da API (Swagger / OpenAPI)
+
+Após iniciar a aplicação, acesse a documentação interativa:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **Especificação OpenAPI (JSON):** http://localhost:8080/v3/api-docs
+
+Se a aplicação estiver configurada em outra porta, substitua `8080` pela porta utilizada. O Springdoc identifica os endpoints dos controllers e gera os esquemas dos DTOs usados como parâmetros e respostas.
