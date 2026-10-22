@@ -124,3 +124,12 @@ Select-String -Path "$HOME\TCC-Experimentos\09-backend-caso2.log" -Pattern "\[EX
 - Registre mensagens observadas no broker, recebidas pelo backend, escritas sem erro, registros efetivamente encontrados no InfluxDB, eventos confirmados no Neo4j e falhas.
 
 A chamada de escrita sem erro não substitui a consulta ao banco. A criação de evento no Neo4j pode depender de condições do processamento e não precisa ocorrer uma vez para cada mensagem ambiental. Use arquivos separados para cada repetição e registre dados preexistentes para não atribuí-los incorretamente ao experimento.
+
+## Documentação da API (Swagger / OpenAPI)
+
+Após iniciar a aplicação, acesse a documentação interativa:
+
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **Especificação OpenAPI (JSON):** http://localhost:8080/v3/api-docs
+
+Se a aplicação estiver configurada em outra porta, substitua `8080` pela porta utilizada. O Springdoc identifica os endpoints dos controllers e gera os esquemas dos DTOs usados como parâmetros e respostas.
