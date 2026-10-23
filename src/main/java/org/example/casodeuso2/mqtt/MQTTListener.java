@@ -143,11 +143,24 @@ public class MQTTListener {
     }
 
     private Sensor buscarSensor(ESP32 esp32, AmbienteDataDTO dto) {
-        return esp32.getSensores()
+        if (esp32.getSensores() == null) {
+            esp32.setSensores(new HashSet<>());
+        }
+
+        Optional<Sensor> sensorOpt = esp32.getSensores()
                 .stream()
-                .filter(s -> s.getModelo().equalsIgnoreCase(dto.getSensor()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+                .filter(s -> s.getModelo() != null && s.getModelo().equalsIgnoreCase(dto.getSensor()))
+                .findFirst();
+
+        if (sensorOpt.isPresent()) {
+            return sensorOpt.get();
+        }
+
+        Sensor sensorBanco = sensorService.buscarPorModelo(dto.getSensor());
+        esp32Service.adicionarSensor(esp32.getId(), sensorBanco.getId());
+        esp32.getSensores().add(sensorBanco);
+
+        return sensorBanco;
     }
 
     private VariavelAmbiente buscarVariavel(Sensor sensor, AmbienteDataDTO dto) {

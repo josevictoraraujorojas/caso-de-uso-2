@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SensorService {
@@ -197,5 +198,11 @@ public class SensorService {
                 repository.save(sensor),
                 SensorResponseDTO.class
         );
+    }
+
+    // BUSCAR POR MODELO
+    public Sensor buscarPorModelo(String modelo) {
+        return repository.findByModeloIgnoreCase(modelo)
+                .orElseThrow(() -> new RuntimeException("Curral não encontrado"));
     }
 }
