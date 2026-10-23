@@ -130,6 +130,34 @@ public class ESP32Service {
         repository.delete(esp32);
     }
 
+    // ADICIONAR SENSOR AO ESP32
+    public ESP32ResponseDTO adicionarSensor(Long esp32Id, Long sensorId) {
+
+        ESP32 esp32 = repository.findById(esp32Id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "ESP32 não encontrado"
+                ));
+
+        Sensor sensor = sensorRepository.findById(sensorId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Sensor não encontrado"
+                ));
+
+        // Se o Set for nulo, inicializa como HashSet
+        if (esp32.getSensores() == null) {
+            esp32.setSensores(new java.util.HashSet<>());
+        }
+
+        esp32.getSensores().add(sensor);
+
+        return DataMapper.parseObject(
+                repository.save(esp32),
+                ESP32ResponseDTO.class
+        );
+    }
+
     // REMOVER SENSOR
     public ESP32ResponseDTO removerSensor(
             Long esp32Id,

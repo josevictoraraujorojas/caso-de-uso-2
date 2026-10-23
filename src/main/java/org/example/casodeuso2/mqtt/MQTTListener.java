@@ -13,12 +13,14 @@ import org.example.casodeuso2.repository.CurralRepository;
 import org.example.casodeuso2.repository.EventoAmbientalRepository;
 import org.example.casodeuso2.service.AmbienteService;
 import org.example.casodeuso2.service.ESP32Service;
+import org.example.casodeuso2.service.SensorService;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import tools.jackson.databind.ObjectMapper;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -34,12 +36,16 @@ public class MQTTListener {
     private final ESP32Service esp32Service;
     private final EventoAmbientalRepository eventoAmbientalRepository;
     private final CurralRepository curralRepository;
+    private final SensorService sensorService;
     private final ObjectMapper mapper;
 
     public MQTTListener(MqttClient cliente,
                         MQTTProperties properties,
                         AmbienteService ambienteService,
-                        ESP32Service esp32Service, EventoAmbientalRepository eventoAmbientalRepository, CurralRepository curralRepository,
+                        ESP32Service esp32Service,
+                        EventoAmbientalRepository eventoAmbientalRepository,
+                        CurralRepository curralRepository,
+                        SensorService sensorService,
                         ObjectMapper mapper) {
 
         this.cliente = cliente;
@@ -48,6 +54,7 @@ public class MQTTListener {
         this.esp32Service = esp32Service;
         this.eventoAmbientalRepository = eventoAmbientalRepository;
         this.curralRepository = curralRepository;
+        this.sensorService = sensorService;
         this.mapper = mapper;
     }
 
@@ -160,11 +167,24 @@ public class MQTTListener {
     }
 
     private Sensor buscarSensor(ESP32 esp32, AmbienteDataDTO dto) {
-        return esp32.getSensores()
+        if (esp32.getSensores() == null) {
+            esp32.setSensores(new HashSet<>());
+        }
+
+        Optional<Sensor> sensorOpt = esp32.getSensores()
                 .stream()
-                .filter(s -> s.getModelo().equalsIgnoreCase(dto.getSensor()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sensor não encontrado"));
+                .filter(s -> s.getModelo() != null && s.getModelo().equalsIgnoreCase(dto.getSensor()))
+                .findFirst();
+
+        if (sensorOpt.isPresent()) {
+            return sensorOpt.get();
+        }
+
+        Sensor sensorBanco = sensorService.buscarPorModelo(dto.getSensor());
+        esp32Service.adicionarSensor(esp32.getId(), sensorBanco.getId());
+        esp32.getSensores().add(sensorBanco);
+
+        return sensorBanco;
     }
 
     private VariavelAmbiente buscarVariavel(Sensor sensor, AmbienteDataDTO dto) {
